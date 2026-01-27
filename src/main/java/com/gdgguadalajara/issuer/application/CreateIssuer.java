@@ -28,7 +28,7 @@ public class CreateIssuer {
     public Issuer run(CreateIssuerRequest request) {
         var user = getCurrentSession.run();
         if (!user.isSuperAdmin)
-            throw DomainException.forbidden("Solo super administradores pueden crear emosores.");
+            throw DomainException.forbidden("Solo super administradores pueden crear emisores.");
         var issuer = new Issuer();
         issuer.name = request.name();
         issuer.description = request.description();
