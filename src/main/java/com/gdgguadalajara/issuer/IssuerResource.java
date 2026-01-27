@@ -3,7 +3,6 @@ package com.gdgguadalajara.issuer;
 import java.util.List;
 import java.util.UUID;
 
-import com.gdgguadalajara.account.model.Account;
 import com.gdgguadalajara.common.model.DomainException;
 import com.gdgguadalajara.issuer.application.CreateIssuer;
 import com.gdgguadalajara.issuer.model.Issuer;
