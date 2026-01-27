@@ -5,6 +5,8 @@ import java.util.UUID;
 
 import org.hibernate.annotations.CreationTimestamp;
 
+import com.fasterxml.jackson.annotation.JsonRawValue;
+
 import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -35,6 +37,7 @@ public class Issuer extends PanacheEntityBase {
     public String logoUrl;
 
     @Lob
+    @JsonRawValue
     public String jsonPayload;
     
     @CreationTimestamp
