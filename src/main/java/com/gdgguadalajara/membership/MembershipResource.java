@@ -4,12 +4,14 @@ import java.util.UUID;
 
 import com.gdgguadalajara.membership.application.CreateIssuerMember;
 import com.gdgguadalajara.membership.application.RemoveIssuerMember;
+import com.gdgguadalajara.membership.application.UpdateIssuerMember;
 import com.gdgguadalajara.membership.model.IssuerMember;
 import com.gdgguadalajara.membership.model.dto.CreateIssuerMemberRequest;
 
 import io.quarkus.security.Authenticated;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.POST;
+import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
 import lombok.RequiredArgsConstructor;
 
@@ -18,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 public class MembershipResource {
 
     private final CreateIssuerMember createIssuerMember;
+    private final UpdateIssuerMember updateIssuerMember;
     private final RemoveIssuerMember removeIssuerMember;
 
     @POST
@@ -25,6 +28,13 @@ public class MembershipResource {
     @Authenticated
     public IssuerMember create(UUID issuerUuid, UUID accountUuid, CreateIssuerMemberRequest request) {
         return createIssuerMember.run(issuerUuid, accountUuid, request.role());
+    }
+
+    @PUT
+    @Path("/issuer/{issuerUuid}/account/{accountUuid}")
+    @Authenticated
+    public void update(UUID issuerUuid, UUID accountUuid, CreateIssuerMemberRequest request) {
+        updateIssuerMember.run(issuerUuid, accountUuid, request.role());
     }
 
     @DELETE
