@@ -15,7 +15,7 @@ import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
 import lombok.RequiredArgsConstructor;
 
-@Path("/api/membership")
+@Path("/api/memberships")
 @RequiredArgsConstructor
 public class MembershipResource {
 
@@ -24,21 +24,21 @@ public class MembershipResource {
     private final RemoveIssuerMember removeIssuerMember;
 
     @POST
-    @Path("/issuer/{issuerUuid}/account/{accountUuid}")
+    @Path("/issuers/{issuerUuid}/accounts/{accountUuid}")
     @Authenticated
     public IssuerMember create(UUID issuerUuid, UUID accountUuid, CreateIssuerMemberRequest request) {
         return createIssuerMember.run(issuerUuid, accountUuid, request.role());
     }
 
     @PUT
-    @Path("/issuer/{issuerUuid}/account/{accountUuid}")
+    @Path("/issuers/{issuerUuid}/accounts/{accountUuid}")
     @Authenticated
     public void update(UUID issuerUuid, UUID accountUuid, CreateIssuerMemberRequest request) {
         updateIssuerMember.run(issuerUuid, accountUuid, request.role());
     }
 
     @DELETE
-    @Path("/issuer/{issuerUuid}/account/{accountUuid}")
+    @Path("/issuers/{issuerUuid}/accounts/{accountUuid}")
     @Authenticated
     public void remove(UUID issuerUuid, UUID accountUuid) {
         removeIssuerMember.run(issuerUuid, accountUuid);

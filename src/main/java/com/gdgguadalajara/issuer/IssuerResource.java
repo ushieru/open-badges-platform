@@ -17,7 +17,7 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import lombok.RequiredArgsConstructor;
 
-@Path("/api/v2/issuer")
+@Path("/api/v2/issuers")
 @RequiredArgsConstructor
 public class IssuerResource {
 
