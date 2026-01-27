@@ -45,4 +45,10 @@ public class IssuerResource {
         return IssuerMember.<IssuerMember>find("issuer.id = ?1", uuid).list();
     }
 
+    @GET
+    @Path("/{uuid}/revocations")
+    public List<IssuerMember> revocations(UUID uuid) {
+        return List.of();
+    }
+
 }
