@@ -1,7 +1,6 @@
 package com.gdgguadalajara.authentication.application;
 
 import java.time.Duration;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 
@@ -11,7 +10,6 @@ import com.gdgguadalajara.account.model.Account;
 import com.gdgguadalajara.authentication.model.dto.AuthenticationRequest;
 import com.gdgguadalajara.authentication.model.dto.AuthenticationResponse;
 import com.gdgguadalajara.common.model.DomainException;
-import com.gdgguadalajara.membership.model.IssuerMember;
 
 import io.quarkus.elytron.security.common.BcryptUtil;
 import io.smallrye.jwt.build.Jwt;
@@ -33,16 +31,10 @@ public class Authentication {
         var isValid = BcryptUtil.matches(request.password(), account.password);
         if (!isValid)
             throw DomainException.badRequest("Error en credeniales");
-        var memberships = IssuerMember.<IssuerMember>list("account", account);
-        var orgsClaim = memberships.stream().collect(
-                HashMap<String, String>::new,
-                (map, membership) -> map.put(membership.issuer.id.toString(), membership.role.toString()),
-                HashMap::putAll);
         var token = Jwt
                 .issuer(issuer)
                 .audience(Set.copyOf(audiences))
                 .subject(account.id.toString())
-                .claim("orgs", orgsClaim)
                 .expiresIn(Duration.ofDays(7))
                 .sign();
         return new AuthenticationResponse(token, account);
