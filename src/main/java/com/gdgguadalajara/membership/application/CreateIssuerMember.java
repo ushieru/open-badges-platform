@@ -37,6 +37,7 @@ public class CreateIssuerMember {
         var issuerMember = new IssuerMember();
         issuerMember.issuer = issuer;
         issuerMember.account = account;
+        issuerMember.role = role;
         issuerMember.persistAndFlush();
         return issuerMember;
     }
