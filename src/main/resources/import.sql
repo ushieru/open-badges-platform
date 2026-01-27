@@ -1,0 +1,2 @@
+INSERT INTO Account(createdAt, email, fullName, isSuperAdmin, isVerified, password, id) 
+    VALUES(0, 'admin@gdgguadalajara.com', 'OBP Admin', true, true, '$2a$10$bLcqAjUZApBkS6LXAGe2KeDPJCYvOOhgigAvTef797q8mSDiEE2J2', X'96cf44a2ce0c4aeba61df7e5892daada');
