@@ -10,6 +10,7 @@ repositories {
 }
 
 dependencies {
+    implementation 'io.quarkus:quarkus-oidc'
     implementation enforcedPlatform("${quarkusPlatformGroupId}:${quarkusPlatformArtifactId}:${quarkusPlatformVersion}")
     implementation 'io.quarkus:quarkus-elytron-security'
     implementation 'io.quarkus:quarkus-rest'
@@ -18,10 +19,8 @@ dependencies {
     implementation 'io.quarkus:quarkus-rest-jackson'
     implementation 'io.quarkus:quarkus-hibernate-orm-panache'
     implementation 'io.quarkus:quarkus-hibernate-validator'
-    implementation 'io.quarkus:quarkus-smallrye-jwt'
     implementation 'io.quarkiverse.jdbc:quarkus-jdbc-sqlite:3.0.11'
     implementation 'io.quarkiverse.quinoa:quarkus-quinoa:2.7.1'
-    implementation 'io.quarkus:quarkus-smallrye-jwt-build'
     implementation 'io.quarkus:quarkus-arc'
     implementation 'io.quarkus:quarkus-hibernate-orm'
     implementation 'io.freefair.lombok:io.freefair.lombok.gradle.plugin:8.13.1'

@@ -3,12 +3,12 @@ package com.gdgguadalajara.security.filters;
 import java.util.Arrays;
 import java.util.UUID;
 
-import org.eclipse.microprofile.jwt.JsonWebToken;
-
+import com.gdgguadalajara.account.model.Account;
 import com.gdgguadalajara.membership.model.IssuerMember;
 import com.gdgguadalajara.membership.model.MemberRole;
 import com.gdgguadalajara.security.annotations.OrgRole;
 
+import io.quarkus.security.identity.SecurityIdentity;
 import jakarta.annotation.Priority;
 import jakarta.ws.rs.Priorities;
 import jakarta.ws.rs.container.ContainerRequestContext;
@@ -26,7 +26,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class OrgSecurityFilter implements ContainerRequestFilter {
 
-    private final JsonWebToken jwt;
+    private final SecurityIdentity identity;
 
     @Context
     ResourceInfo resourceInfo;
@@ -40,10 +40,15 @@ public class OrgSecurityFilter implements ContainerRequestFilter {
         if (issuerParam == null)
             return;
         var issuerId = UUID.fromString(issuerParam);
-        var accountUuid = UUID.fromString(jwt.getSubject());
+        var userEmail = identity.getPrincipal().getName();
+        Account currentUser = Account.find("email", userEmail).firstResult();
+        if (currentUser == null) {
+            requestContext.abortWith(Response.status(Response.Status.UNAUTHORIZED).build());
+            return;
+        }
         var membership = IssuerMember.<IssuerMember>find(
                 "account.id = ?1 and issuer.id = ?2",
-                accountUuid, issuerId).firstResult();
+                currentUser.id, issuerId).firstResult();
         if (membership == null || !isRoleAllowed(membership.role))
             requestContext.abortWith(
                     Response.status(Response.Status.FORBIDDEN)

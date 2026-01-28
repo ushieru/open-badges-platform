@@ -24,19 +24,12 @@ public class Account extends PanacheEntityBase {
     public String email;
 
     @Column(nullable = false)
-    @JsonIgnore
-    public String password;
-
-    @Column(nullable = false)
     public String fullName;
 
     @Column(nullable = false)
     @JsonIgnore
     public Boolean isSuperAdmin = false;
-
-    @Column(nullable = false)
-    public Boolean isVerified = false;
-
+    
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
     public Instant createdAt;
