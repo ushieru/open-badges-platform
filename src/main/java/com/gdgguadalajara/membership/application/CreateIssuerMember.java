@@ -30,6 +30,10 @@ public class CreateIssuerMember {
             account = Account.find("email", request.email()).firstResult();
         if (account == null)
             throw DomainException.notFound("Cuenta no encontrada");
+        var member = IssuerMember.<IssuerMember>find("issuer = ?1 and account = ?2", issuer, account)
+                .firstResult();
+        if (member != null)
+            throw DomainException.badRequest("El miembro ya existe");
         return run(issuer, account, request.role());
     }
 
