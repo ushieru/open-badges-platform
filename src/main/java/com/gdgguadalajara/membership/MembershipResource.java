@@ -6,8 +6,9 @@ import com.gdgguadalajara.membership.application.CreateIssuerMember;
 import com.gdgguadalajara.membership.application.RemoveIssuerMember;
 import com.gdgguadalajara.membership.application.UpdateIssuerMember;
 import com.gdgguadalajara.membership.model.IssuerMember;
+import com.gdgguadalajara.membership.model.MemberRole;
 import com.gdgguadalajara.membership.model.dto.CreateIssuerMemberRequest;
-import com.gdgguadalajara.security.annotations.SuperAdmin;
+import com.gdgguadalajara.security.annotations.SecuredAction;
 
 import io.quarkus.security.Authenticated;
 import jakarta.ws.rs.DELETE;
@@ -27,7 +28,7 @@ public class MembershipResource {
     @POST
     @Path("/issuers/{issuerUuid}/accounts")
     @Authenticated
-    @SuperAdmin
+    @SecuredAction({ MemberRole.OWNER })
     public IssuerMember create(UUID issuerUuid, CreateIssuerMemberRequest request) {
         return createIssuerMember.run(issuerUuid, request);
     }
@@ -35,7 +36,7 @@ public class MembershipResource {
     @PUT
     @Path("/issuers/{issuerUuid}/accounts/{accountUuid}")
     @Authenticated
-    @SuperAdmin
+    @SecuredAction({ MemberRole.OWNER })
     public void update(UUID issuerUuid, UUID accountUuid, CreateIssuerMemberRequest request) {
         updateIssuerMember.run(issuerUuid, accountUuid, request.role());
     }
@@ -43,7 +44,7 @@ public class MembershipResource {
     @DELETE
     @Path("/issuers/{issuerUuid}/accounts/{accountUuid}")
     @Authenticated
-    @SuperAdmin
+    @SecuredAction({ MemberRole.OWNER })
     public void remove(UUID issuerUuid, UUID accountUuid) {
         removeIssuerMember.run(issuerUuid, accountUuid);
     }

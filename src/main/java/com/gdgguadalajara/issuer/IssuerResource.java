@@ -11,6 +11,8 @@ import com.gdgguadalajara.issuer.application.CreateIssuer;
 import com.gdgguadalajara.issuer.model.Issuer;
 import com.gdgguadalajara.issuer.model.dto.CreateIssuerRequest;
 import com.gdgguadalajara.membership.model.IssuerMember;
+import com.gdgguadalajara.membership.model.MemberRole;
+import com.gdgguadalajara.security.annotations.SecuredAction;
 import com.gdgguadalajara.security.annotations.SuperAdmin;
 
 import io.quarkus.security.Authenticated;
@@ -42,26 +44,26 @@ public class IssuerResource {
     }
 
     @GET
-    @Path("/{uuid}")
+    @Path("/{issuerUuid}")
     @Produces(MediaType.APPLICATION_JSON)
-    public String jsondl(UUID uuid) {
-        var issuer = Issuer.<Issuer>findById(uuid);
+    public String jsondl(UUID issuerUuid) {
+        var issuer = Issuer.<Issuer>findById(issuerUuid);
         if (issuer == null)
             throw DomainException.notFound("Emisor no encontrado");
         return issuer.jsonPayload;
     }
 
     @GET
-    @Path("/{uuid}/members")
+    @Path("/{issuerUuid}/members")
     @Authenticated
-    @SuperAdmin
-    public PaginatedResponse<IssuerMember> getMembers(UUID uuid, @BeanParam @Valid PaginationRequestParams params) {
-        return PageBuilder.of(IssuerMember.<IssuerMember>find("issuer.id = ?1", uuid), params.page, params.size);
+    @SecuredAction({ MemberRole.OWNER })
+    public PaginatedResponse<IssuerMember> getMembers(UUID issuerUuid, @BeanParam @Valid PaginationRequestParams params) {
+        return PageBuilder.of(IssuerMember.<IssuerMember>find("issuer.id = ?1", issuerUuid), params.page, params.size);
     }
 
     @GET
-    @Path("/{uuid}/revocations")
-    public List<IssuerMember> revocations(UUID uuid) {
+    @Path("/{issuerUuid}/revocations")
+    public List<IssuerMember> revocations(UUID issuerUuid) {
         return List.of();
     }
 
