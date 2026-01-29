@@ -3,6 +3,9 @@ package com.gdgguadalajara.badgeclass.model.dto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.gdgguadalajara.badgeclass.model.BadgeClass;
 
+import io.quarkus.runtime.annotations.RegisterForReflection;
+
+@RegisterForReflection
 public record BadgeClassJsonLd(
         @JsonProperty("@context") String context,
         String type,

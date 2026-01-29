@@ -6,6 +6,9 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.gdgguadalajara.assertion.model.Assertion;
 
+import io.quarkus.runtime.annotations.RegisterForReflection;
+
+@RegisterForReflection
 public record AssertionJsonLd(
         @JsonProperty("@context") String context,
         String id,

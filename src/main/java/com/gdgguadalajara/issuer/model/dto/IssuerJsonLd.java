@@ -3,6 +3,9 @@ package com.gdgguadalajara.issuer.model.dto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.gdgguadalajara.issuer.model.Issuer;
 
+import io.quarkus.runtime.annotations.RegisterForReflection;
+
+@RegisterForReflection
 public record IssuerJsonLd(
         @JsonProperty("@context") String context,
         String type,
