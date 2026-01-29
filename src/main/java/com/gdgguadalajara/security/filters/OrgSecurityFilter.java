@@ -37,8 +37,13 @@ public class OrgSecurityFilter implements ContainerRequestFilter {
     @Override
     public void filter(ContainerRequestContext requestContext) {
         var issuerParam = uriInfo.getPathParameters().getFirst("issuerUuid");
-        if (issuerParam == null)
+        if (issuerParam == null) {
+            requestContext.abortWith(
+                    Response.status(Response.Status.BAD_REQUEST)
+                            .entity("{\"message\":\"Issuer no encontrado\"}")
+                            .build());
             return;
+        }
         var issuerId = UUID.fromString(issuerParam);
         var userEmail = identity.getPrincipal().getName();
         Account currentUser = Account.find("email", userEmail).firstResult();
