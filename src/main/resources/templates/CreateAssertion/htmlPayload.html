@@ -1,0 +1,165 @@
+{@String baseUrl}
+{@com.gdgguadalajara.assertion.model.Assertion assertion}
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>{assertion.badgeClass.name} - Otorgado a {assertion.account.fullName}</title>
+    <meta name="description" content="{assertion.badgeClass.description}">
+    <link rel="canonical" href="{baseUrl}/api/v2/assertions/{assertion.id}">
+
+    <meta property="og:site_name" content="XalixcoLabs">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{baseUrl}/api/v2/assertions/{assertion.id}">
+    <meta property="og:title" content="Insignia Digital: {assertion.badgeClass.name}">
+    <meta property="og:description"
+        content="Acreditación oficial emitida por {assertion.badgeClass.issuer.name} para {assertion.account.fullName}">
+    <meta property="og:image" content="{baseUrl}/api/storage/images/{assertion.badgeClass.image.id}">
+    <meta property="og:image:alt" content="Imagen de la insignia {assertion.badgeClass.name}">
+    <meta property="og:locale" content="es_MX">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{assertion.badgeClass.name} - {assertion.account.fullName}">
+    <meta name="twitter:description" content="{assertion.badgeClass.description}">
+    <meta name="twitter:image" content="{baseUrl}/api/storage/images/{assertion.badgeClass.image.id}">
+
+    <link rel="icon" type="{assertion.badgeClass.image.contentType}"
+        href="{baseUrl}/api/storage/images/{assertion.badgeClass.image.id}">
+
+    <script type="application/ld+json">
+        {assertion.jsonPayload.raw}
+    </script>
+
+    <style>
+        body {
+            padding: 0;
+            margin: 0;
+        }
+
+        .badge-container {
+            max-width: 800px;
+            margin: 0 auto;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            background: #ffffff;
+        }
+
+        .badge-header {
+            background: #1e293b;
+            color: #ffffff;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .badge-body {
+            padding: 30px;
+            text-align: center;
+        }
+
+        .badge-image {
+            width: 180px;
+            height: 180px;
+            object-fit: contain;
+            margin-bottom: 20px;
+            border-radius: 12px;
+        }
+
+        .badge-title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #0f172a;
+            margin: 10px 0;
+        }
+
+        .recipient-info {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f8fafc;
+            border-radius: 8px;
+        }
+
+        .label {
+            font-size: 15px;
+            text-transform: uppercase;
+            color: #64748b;
+            letter-spacing: 0.05em;
+        }
+
+        .value {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1e293b;
+            display: block;
+            margin-top: 4px;
+        }
+
+        .badge-footer {
+            padding: 20px;
+            background: #f1f5f9;
+            text-align: center;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .verify-button {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #2563eb;
+            color: #ffffff;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="badge-container">
+        <div class="badge-header">
+            <div class="label" style="color: #94a3b8;">Emisor Autorizado</div>
+            <a href="{baseUrl}/organizations/{assertion.badgeClass.issuer.id}" target="_blank"
+                style="font-size: 20px; font-weight: 600; margin-top: 10px; color: #ffffff;">
+                {assertion.badgeClass.issuer.name}
+            </a>
+        </div>
+
+        <div class="badge-body">
+            <img src="{baseUrl}/api/storage/images/{assertion.badgeClass.image.id}" alt="{assertion.badgeClass.name}"
+                class="badge-image">
+            <h1 class="badge-title">{assertion.badgeClass.name}</h1>
+            <p style="color: #475569; font-size: 14px; line-height: 1.5;">{assertion.badgeClass.description}</p>
+
+            <div class="recipient-info">
+                <span class="label">Otorgado a</span>
+                <span class="value">{assertion.account.fullName}</span>
+            </div>
+
+            <div style="display: flex; justify-content: space-around; text-align: left;">
+                <div>
+                    <span class="label">Fecha</span>
+                    <span class="value">{assertion.issuedOn}</span>
+                </div>
+                <div>
+                    <span class="label">ID de Verificación</span>
+                    <span class="value" style="font-family: monospace; font-size: 12px;">
+                        {assertion.id}
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <div class="badge-footer">
+            <p style="font-size: 15px; color: #94a3b8; margin-top: 15px;">
+                Esta es una credencial digital verificable protegida por el estándar Open Badges v2.0.
+            </p>
+        </div>
+    </div>
+</body>
+
+</html>
