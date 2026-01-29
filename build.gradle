@@ -24,6 +24,7 @@ dependencies {
     implementation 'io.quarkus:quarkus-arc'
     implementation 'io.quarkus:quarkus-hibernate-orm'
     implementation 'io.freefair.lombok:io.freefair.lombok.gradle.plugin:8.13.1'
+    implementation 'commons-codec:commons-codec:1.17.1'
 
     testImplementation 'io.quarkus:quarkus-junit5'
     testImplementation 'io.rest-assured:rest-assured'
