@@ -16,6 +16,8 @@ import com.gdgguadalajara.assertion.model.dto.AssertionJsonLd;
 import com.gdgguadalajara.assertion.model.dto.EmitBadgeRequest;
 import com.gdgguadalajara.badgeclass.model.BadgeClass;
 import com.gdgguadalajara.common.model.DomainException;
+import com.gdgguadalajara.mail.application.SendBadgeMailNotification;
+import com.gdgguadalajara.mail.model.dto.SendBadgeMailNotificationRequest;
 
 import io.quarkus.qute.CheckedTemplate;
 import io.quarkus.qute.TemplateInstance;
@@ -29,6 +31,7 @@ import lombok.RequiredArgsConstructor;
 public class CreateAssertion {
 
     private final ObjectMapper objectMapper;
+    private final SendBadgeMailNotification sendBadgeMailNotification;
 
     @CheckedTemplate
     public static class Templates {
@@ -39,7 +42,7 @@ public class CreateAssertion {
     public String domain;
 
     public List<Assertion> run(UUID badgeClassUuid, EmitBadgeRequest request) {
-        List<Assertion> created = new ArrayList<>();
+        List<SendBadgeMailNotificationRequest> emailRequests = new ArrayList<>();
         BadgeClass badgeClass = BadgeClass.findById(badgeClassUuid);
         if (badgeClass == null)
             throw DomainException.notFound("Badge no encontrada");
@@ -49,9 +52,11 @@ public class CreateAssertion {
                     badgeClass, emailsha256) > 0;
             if (exists)
                 continue;
-            created.add(run(badgeClass, email, emailsha256, request.evidenceUrl()));
+            var assertion = run(badgeClass, email, emailsha256, request.evidenceUrl());
+            emailRequests.add(new SendBadgeMailNotificationRequest(assertion, email));
         }
-        return created;
+        sendBadgeMailNotification.run(emailRequests);
+        return emailRequests.stream().map(r -> r.assertion()).toList();
     }
 
     public Assertion run(BadgeClass badge, String email, String emailsha256, String evidence) {
@@ -70,11 +75,11 @@ public class CreateAssertion {
         }
 
         var account = Account.<Account>find("email", email).firstResult();
+        Hibernate.initialize(assertion.badgeClass);
+        Hibernate.initialize(assertion.badgeClass.issuer);
+        Hibernate.initialize(assertion.badgeClass.image);
         if (account != null) {
             assertion.account = account;
-            Hibernate.initialize(assertion.badgeClass);
-            Hibernate.initialize(assertion.badgeClass.issuer);
-            Hibernate.initialize(assertion.badgeClass.image);
             assertion.htmlPayload = Templates.htmlPayload(domain, assertion).render()
                     .replaceAll("(?s)", "")
                     .replaceAll("(?s)\\s+", " ")
