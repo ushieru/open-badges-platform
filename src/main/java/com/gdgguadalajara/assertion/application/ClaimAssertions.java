@@ -40,7 +40,6 @@ public class ClaimAssertions {
                     .replaceAll(";\\s+", ";")
                     .trim();
             assertion.persistAndFlush();
-            assertion.persistAndFlush();
         }
     }
 }
