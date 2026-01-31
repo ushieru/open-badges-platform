@@ -1,15 +1,8 @@
 <script setup>
-import { getApiAuthMe } from '~/services/authentication-resource/authentication-resource';
+const route = useRoute()
 
-const auth = useAuth()
-
-const { error, data } = useLazyAsyncData(() => getApiAuthMe())
-
-watch(error, (error) => {
-    if (error) return navigateTo('/')
-})
-watch(data, (data) => {
-    if (data.status == 200) return navigateTo('/api/auth/logout', { external: true })
+onMounted(() => {
+    return navigateTo('/api/auth/logout?r=' + route.query.r, { external: true })
 })
 </script>
 

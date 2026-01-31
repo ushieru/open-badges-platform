@@ -17,6 +17,7 @@ import io.smallrye.mutiny.Uni;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
+import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.Response;
 import lombok.AllArgsConstructor;
 
@@ -59,8 +60,10 @@ public class AuthenticationResource {
 
     @GET
     @Path("/logout")
-    public Uni<Response> logout() {
+    public Uni<Response> logout(@QueryParam("r") String redirect) {
         return oidcSession.logout()
-                .onItem().transform(v -> Response.seeOther(URI.create("/")).build());
+                .onItem().transform(
+                        v -> Response.seeOther(URI.create((redirect != null && !redirect.isEmpty()) ? redirect : "/"))
+                                .build());
     }
 }

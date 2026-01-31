@@ -1,5 +1,5 @@
 <script setup>
-const { me } = useAuth()
+const { me, meResponse } = useAuth()
 </script>
 
 <template>
@@ -10,9 +10,14 @@ const { me } = useAuth()
             </NuxtLink>
         </div>
         <div class="flex-none">
-            <NuxtLink :to="'/login?r=' + $route.path" v-if="me == null" class="btn btn-primary">
-                Iniciar Sesión
-            </NuxtLink>
+            <template v-if="me == null">
+                <NuxtLink v-if="meResponse?.status == 404" to="/logout?r=login" class="btn btn-primary">
+                    Usar otra cuenta
+                </NuxtLink>
+                <NuxtLink v-else :to="'/login?r=' + $route.path" class="btn btn-primary">
+                    Iniciar Sesión
+                </NuxtLink>
+            </template>
             <div v-else class="dropdown dropdown-end">
                 <div tabindex="0" role="button" class="btn btn-primary m-1 w-20 md:w-auto">
                     <p class="text-ellipsis whitespace-nowrap overflow-hidden">
@@ -48,7 +53,7 @@ const { me } = useAuth()
                     </li>
                     <li></li>
                     <li>
-                        <NuxtLink to="/logout">
+                        <NuxtLink to="/logout?r=">
                             <Icon name="material-symbols:exit-to-app-rounded" class="text-2xl" />
                             <span class="is-drawer-close:hidden">Cerrar Sesión</span>
                         </NuxtLink>
