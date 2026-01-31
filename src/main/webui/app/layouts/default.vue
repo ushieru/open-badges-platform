@@ -14,8 +14,10 @@ const { me } = useAuth()
                 Iniciar Sesión
             </NuxtLink>
             <div v-else class="dropdown dropdown-end">
-                <div tabindex="0" role="button" class="btn btn-primary m-1">
-                    {{ me?.account?.fullName }}
+                <div tabindex="0" role="button" class="btn btn-primary m-1 w-20 md:w-auto">
+                    <p class="text-ellipsis whitespace-nowrap overflow-hidden">
+                        {{ me?.account?.fullName }}
+                    </p>
                 </div>
                 <ul tabindex="-1" class="dropdown-content menu bg-base-100 rounded-box z-1 w-52 p-2 shadow-sm">
                     <OnlySuperUsers>
