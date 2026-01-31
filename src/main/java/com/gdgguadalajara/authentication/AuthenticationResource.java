@@ -30,12 +30,6 @@ public class AuthenticationResource {
     private final RegisterAccount registerAccount;
 
     @GET
-    @Path("/")
-    public Response index() {
-        return Response.ok().build();
-    }
-
-    @GET
     @Path("/me")
     public MeResponse me() {
         var account = getCurrentSession.run();
@@ -57,7 +51,7 @@ public class AuthenticationResource {
     public Response login() {
         try {
             getCurrentSession.run();
-            return Response.seeOther(URI.create("/login")).build();
+            return Response.seeOther(URI.create("/profile")).build();
         } catch (Exception e) {
             return Response.seeOther(URI.create("/register")).build();
         }
