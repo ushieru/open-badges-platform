@@ -64,6 +64,7 @@ public class CreateAssertion {
         assertion.badgeClass = badge;
         assertion.recipientEmail = emailsha256;
         assertion.evidence = evidence;
+        assertion.isPublic = false;
         assertion.persistAndFlush();
 
         var jsonLd = AssertionJsonLd.fromEntity(domain, assertion);
@@ -80,6 +81,7 @@ public class CreateAssertion {
         Hibernate.initialize(assertion.badgeClass.image);
         if (account != null) {
             assertion.account = account;
+            assertion.isPublic = true;
             assertion.htmlPayload = Templates.htmlPayload(domain, assertion).render()
                     .replaceAll("(?s)", "")
                     .replaceAll("(?s)\\s+", " ")

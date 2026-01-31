@@ -28,6 +28,7 @@ public class ClaimAssertions {
             return;
         for (Assertion assertion : orphans) {
             assertion.account = account;
+            assertion.isPublic = true;
             Hibernate.initialize(assertion.badgeClass);
             Hibernate.initialize(assertion.badgeClass.issuer);
             Hibernate.initialize(assertion.badgeClass.image);
