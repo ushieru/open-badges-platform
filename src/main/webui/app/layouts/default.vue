@@ -49,7 +49,7 @@ const { me } = useAuth()
             </div>
         </div>
     </div>
-    <div class="px-3 lg:px-10 py-10">
+    <div class="px-3 lg:px-10 py-10 min-h-screen">
         <slot></slot>
     </div>
     <footer class="footer footer-horizontal footer-center bg-base-200 text-base-content rounded p-10">
