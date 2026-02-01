@@ -1,9 +1,8 @@
 <script setup>
 const route = useRoute()
-const config = useRuntimeConfig()
 
 onMounted(() => {
-    return navigateTo(`${config.public.siteUrl}/api/auth/logout?r=` + route.query.r, { external: true })
+    return navigateTo(`/api/auth/logout?r=` + route.query.r, { external: true })
 })
 </script>
 
