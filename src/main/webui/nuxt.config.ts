@@ -15,5 +15,10 @@ export default defineNuxtConfig({
   },
   css: ['./app/assets/css/main.css'],
   vite: { plugins: [tailwindcss(),], },
-  modules: ['@nuxt/icon', 'nuxt-toast']
+  modules: ['@nuxt/icon', 'nuxt-toast'],
+  runtimeConfig: {
+    public: {
+      siteUrl: process.env.NUXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+    }
+  },
 })
