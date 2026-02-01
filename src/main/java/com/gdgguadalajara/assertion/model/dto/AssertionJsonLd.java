@@ -48,7 +48,7 @@ public record AssertionJsonLd(
                 "https://w3id.org/openbadges/v2",
                 canonicalId,
                 "Assertion",
-                new Recipient("email", "SHA256$" + entity.recipientEmail, true),
+                new Recipient("email", entity.recipientEmail, true),
                 badgeUrl,
                 entity.issuedOn.toString(),
                 new Verification("hosted"),
