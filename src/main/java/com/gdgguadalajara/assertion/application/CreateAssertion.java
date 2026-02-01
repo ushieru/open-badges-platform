@@ -65,7 +65,8 @@ public class CreateAssertion {
             var assertion = run(badgeClass, email, emailsha256, request.evidenceUrl());
             emailRequests.add(new SendBadgeMailNotificationRequest(assertion, email));
         }
-        sendBadgeMailNotification.run(emailRequests);
+        if (!emailRequests.isEmpty())
+            sendBadgeMailNotification.run(emailRequests);
         return emailRequests.stream().map(r -> r.assertion()).toList();
     }
 
