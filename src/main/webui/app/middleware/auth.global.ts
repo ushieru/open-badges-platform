@@ -1,7 +1,15 @@
 export default defineNuxtRouteMiddleware(async (to, from) => {
     const { fetchMe, meResponse } = useAuth();
-    const publicRoutes = ['/', '/login', '/terms', '/privacy']
-    const isPublicRoute = publicRoutes.includes(to.path)
+    const publicRouteNames = [
+        'index',
+        'login',
+        'terms',
+        'privacy',
+        'badges-badgeId',
+        'organizations-id'
+    ]
+    
+    const isPublicRoute = publicRouteNames.includes(to.name as string)
     if (!isPublicRoute) {
         await fetchMe()
 
