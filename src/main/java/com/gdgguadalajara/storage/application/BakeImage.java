@@ -38,10 +38,10 @@ public class BakeImage {
         var svg = doc.getDocumentElement();
 
         svg.setAttribute("xmlns:openbadges", "http://openbadges.org");
-        var script = doc.createElement("openbadges:assertion");
-        script.setAttribute("verify", String.format("%s/api/v2/assertions/%s", domain, assertion.id));
-        script.setTextContent("<![CDATA[" + assertion.jsonPayload + "]]>");
-        svg.insertBefore(script, svg.getFirstChild());
+        var openBangesAssetion = doc.createElement("openbadges:assertion");
+        openBangesAssetion.setAttribute("verify", String.format("%s/api/v2/assertions/%s", domain, assertion.id));
+        openBangesAssetion.setTextContent("<![CDATA[" + assertion.jsonPayload + "]]>");
+        svg.insertBefore(openBangesAssetion, svg.getFirstChild());
 
         var tf = TransformerFactory.newInstance();
         var transformer = tf.newTransformer();
