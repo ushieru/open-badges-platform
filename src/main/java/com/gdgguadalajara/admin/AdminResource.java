@@ -84,17 +84,23 @@ public class AdminResource {
         if (assertion == null)
             throw DomainException.notFound("Acreditación no encontrada");
         try {
-            var imageBaked = bakeImage.bakePng(assertion.badgeClass.image.data, assertion);
+            var imageBaked = bakeImage.bake(assertion);
             if (account.isSuperAdmin
                     || assertion.account.id.equals(account.id)
                     || IssuerMember.find(
                             "account.id = ?1 and issuer.id = ?2",
                             account.id,
                             assertion.badgeClass.issuer.id).count() > 0) {
+                var ext = switch (assertion.badgeClass.image.contentType) {
+                    case "image/png" -> ".png";
+                    case "image/svg+xml" -> ".svg";
+                    default -> throw DomainException
+                            .badRequest("Formato de imagen no soportado: " + assertion.badgeClass.image.contentType);
+                };
                 var fileName = assertion.badgeClass.name.toLowerCase()
                         .replaceAll("[^a-z0-9]", "-")
                         .replaceAll("-+", "-")
-                        + ".png";
+                        + ext;
                 var encodedFileName = URLEncoder.encode(fileName, StandardCharsets.UTF_8)
                         .replace("+", "%20");
                 return Response.ok(imageBaked)

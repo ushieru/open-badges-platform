@@ -48,10 +48,11 @@ const resetInput = () => {
             <img v-if="previewUrl" :src="previewUrl" class="absolute inset-0 object-cover w-full h-full" />
             <div v-else class="flex flex-col items-center justify-center pt-5 pb-6">
                 <span class="material-symbols-outlined text-gray-400 text-5xl mb-2">Imagen</span>
-                <p class="text-xs text-gray-500 dark:text-gray-400 font-medium">PNG cuadrado</p>
+                <p class="text-xs text-gray-500 dark:text-gray-400 font-medium">SVG/PNG cuadrado</p>
                 <p class="text-[10px] text-gray-400 mt-1">Máx. 500x500px (2MB)</p>
             </div>
-            <input ref="fileInput" type="file" class="hidden" accept="image/png" @change="onFileChange" />
+            <input ref="fileInput" type="file" class="hidden" accept="image/png, image/svg+xml"
+                @change="onFileChange" />
         </label>
         <p v-if="error" class="mt-2 text-xs text-red-500 font-bold uppercase">{{ error }}</p>
     </div>

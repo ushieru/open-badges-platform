@@ -23,7 +23,7 @@ public class CreateImage {
 
     @Transactional
     public Image run(byte[] bytes, String contentType) {
-        imageValidator.run(bytes);
+        imageValidator.run(bytes, contentType);
         Image image = new Image();
         image.data = bytes;
         image.contentType = contentType;

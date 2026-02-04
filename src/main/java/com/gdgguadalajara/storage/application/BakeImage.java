@@ -1,18 +1,51 @@
 package com.gdgguadalajara.storage.application;
 
 import com.gdgguadalajara.assertion.model.Assertion;
+import com.gdgguadalajara.common.model.DomainException;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import javax.imageio.*;
 import javax.imageio.metadata.*;
 import javax.imageio.stream.ImageOutputStream;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+
 import java.awt.image.BufferedImage;
 import java.io.*;
 
 @ApplicationScoped
 public class BakeImage {
 
-    public byte[] bakePng(byte[] originalImage, Assertion assertion) throws Exception {
+    public byte[] bake(Assertion assertion) throws Exception {
+        if ("image/svg+xml".equalsIgnoreCase(assertion.badgeClass.image.contentType))
+            return bakeSvg(assertion.badgeClass.image.data, assertion);
+        if ("image/png".equalsIgnoreCase(assertion.badgeClass.image.contentType))
+            return bakePng(assertion.badgeClass.image.data, assertion);
+        throw DomainException.badRequest("Formato de imagen no soportado: " + assertion.badgeClass.image.contentType);
+    }
+
+    private byte[] bakeSvg(byte[] originalImage, Assertion assertion) throws Exception {
+        var dbf = DocumentBuilderFactory.newInstance();
+        var db = dbf.newDocumentBuilder();
+        var doc = db.parse(new ByteArrayInputStream(originalImage));
+        var svg = doc.getDocumentElement();
+
+        var script = doc.createElement("script");
+        script.setAttribute("type", "application/ld+json");
+        script.setAttribute("id", "openbadges");
+        script.setTextContent(assertion.jsonPayload);
+        svg.insertBefore(script, svg.getFirstChild());
+
+        var tf = TransformerFactory.newInstance();
+        var transformer = tf.newTransformer();
+        var os = new ByteArrayOutputStream();
+        transformer.transform(new DOMSource(doc), new StreamResult(os));
+        return os.toByteArray();
+    }
+
+    private byte[] bakePng(byte[] originalImage, Assertion assertion) throws Exception {
         InputStream is = new ByteArrayInputStream(originalImage);
         ImageReader reader = ImageIO.getImageReadersByFormatName("png").next();
         reader.setInput(ImageIO.createImageInputStream(is));
