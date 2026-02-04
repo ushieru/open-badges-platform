@@ -12,11 +12,16 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
+import org.eclipse.microprofile.config.inject.ConfigProperty;
+
 import java.awt.image.BufferedImage;
 import java.io.*;
 
 @ApplicationScoped
 public class BakeImage {
+
+    @ConfigProperty(name = "com.gdgguadalajara.open-badges-platform.domain")
+    public String domain;
 
     public byte[] bake(Assertion assertion) throws Exception {
         if ("image/svg+xml".equalsIgnoreCase(assertion.badgeClass.image.contentType))
@@ -32,10 +37,10 @@ public class BakeImage {
         var doc = db.parse(new ByteArrayInputStream(originalImage));
         var svg = doc.getDocumentElement();
 
-        var script = doc.createElement("script");
-        script.setAttribute("type", "application/ld+json");
-        script.setAttribute("id", "openbadges");
-        script.setTextContent(assertion.jsonPayload);
+        svg.setAttribute("xmlns:openbadges", "http://openbadges.org");
+        var script = doc.createElement("openbadges:assertion");
+        script.setAttribute("verify", String.format("%s/api/v2/assertions/%s", domain, assertion.id));
+        script.setTextContent("<![CDATA[" + assertion.jsonPayload + "]]>");
         svg.insertBefore(script, svg.getFirstChild());
 
         var tf = TransformerFactory.newInstance();
