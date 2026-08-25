@@ -15,46 +15,43 @@ watch(params, _ => refresh())
 </script>
 
 <template>
-    <div class="card bg-base-200 shadow-xl mt-5">
-        <div class="card-body">
-            <h3 class="card-title">Credenciales</h3>
-            <div class="divider m-0"></div>
+    <div class="card card-pad">
+        <div class="flex items-center justify-between gap-4 mb-6">
+            <div>
+                <h2 class="font-display text-lg font-bold">Credenciales</h2>
+                <p class="text-sm text-ink-soft">Insignias emitidas por esta organización.</p>
+            </div>
             <OnlyMembers :issuer-uuid="issuerUuid">
-                <div class="mb-3">
-                    <NuxtLink :to="`/organizations/${issuerUuid}/badges/new`" class="btn btn-primary">
-                        <Icon name="material-symbols:workspace-premium" class="text-2xl" />
-                        Nueva credencial
-                    </NuxtLink>
-                </div>
+                <NuxtLink :to="`/organizations/${issuerUuid}/badges/new`" class="btn btn-primary btn-sm shrink-0">
+                    <Icon name="material-symbols:add" class="text-lg" />
+                    Nueva credencial
+                </NuxtLink>
             </OnlyMembers>
-            <div v-if="status !== 'success'" class="grid place-items-center">
-                <span class="loading loading-ring loading-xl"></span>
-            </div>
-            <div v-else>
-                <div v-if="paginatedBadges.data.length === 0" class="text-center text-gray-500">
-                    No hay credenciales disponibles.
-                </div>
-                <div v-else>
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 gap-3 mb-4">
-                        <NuxtLink v-for="badge in paginatedBadges.data" :key="badge.id" :to="`/badges/${badge.id}`"
-                            class="card shadow hover:shadow-xl transition tooltip" :data-tip="badge.name">
-                            <div class="card-body p-2">
-                                <img :src="badge.jsonPayload.image" :alt="badge.name">
-                            </div>
-                        </NuxtLink>
-                    </div>
-                    <div class="grid place-items-center mt-4">
-                        <div class="join" v-if="status == 'success'">
-                            <button class="join-item btn" :class="{ 'btn-disabled': !paginatedBadges?.meta?.prevPage }"
-                                @click="prevPage">«</button>
-                            <button class="join-item btn btn-active cursor-auto">Page {{
-                                paginatedBadges?.meta?.currentPage }}</button>
-                            <button class="join-item btn" :class="{ 'btn-disabled': !paginatedBadges?.meta?.nextPage }"
-                                @click="nextPage">»</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
         </div>
+
+        <div v-if="status !== 'success'" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+            <div v-for="i in 8" :key="i" class="skeleton aspect-square rounded-2xl"></div>
+        </div>
+
+        <div v-else-if="!paginatedBadges?.data?.length" class="empty">
+            <span class="flex h-14 w-14 items-center justify-center rounded-2xl bg-teal-soft text-teal">
+                <Icon name="material-symbols:workspace-premium" class="text-2xl" />
+            </span>
+            <p class="text-sm">No hay credenciales disponibles todavía.</p>
+        </div>
+
+        <template v-else>
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                <NuxtLink v-for="badge in paginatedBadges.data" :key="badge.id" :to="`/badges/${badge.id}`"
+                    class="card card-hover p-3 group">
+                    <img :src="badge.jsonPayload.image" :alt="badge.name"
+                        class="aspect-square w-full rounded-xl object-cover transition-transform duration-500 group-hover:scale-[1.02]" />
+                    <p class="mt-3 text-sm font-semibold line-clamp-2">{{ badge.name }}</p>
+                </NuxtLink>
+            </div>
+            <div class="mt-6">
+                <AppPagination :meta="paginatedBadges?.meta" @prev="prevPage" @next="nextPage" />
+            </div>
+        </template>
     </div>
 </template>
