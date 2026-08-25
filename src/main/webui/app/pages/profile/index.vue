@@ -6,20 +6,20 @@ const toast = useToast()
 const router = useRouter()
 const route = useRoute()
 
-const onEditNameSubmit = (e) => putApiMeAccount({
-    name: e.target.name.value
-})
+const editNameOpen = ref(false)
+const linkEmailOpen = ref(false)
+const confirmEmailOpen = ref(false)
+
+const onEditNameSubmit = (e) => putApiMeAccount({ name: e.target.name.value })
     .then(_ => fetchMe())
     .then(_ => e.target.reset())
-    .then(_ => closeModal('edit-name'))
+    .then(_ => { editNameOpen.value = false })
     .then(_ => toast.success({ message: 'Nombre actualizado' }))
     .catch(_ => toast.error({ message: 'Error al actualizar el nombre' }))
 
-const onLinkEmailSubmit = (e) => postApiMeAccountLinkedEmails({
-    email: e.target.email.value
-})
+const onLinkEmailSubmit = (e) => postApiMeAccountLinkedEmails({ email: e.target.email.value })
     .then(_ => e.target.reset())
-    .then(_ => closeModal('link-new-email'))
+    .then(_ => { linkEmailOpen.value = false })
     .then(_ => toast.success({ message: 'Vinculación de email en proceso, revisa tu bandeja de entrada' }))
     .catch(_ => toast.error({ message: 'Error al vincular el email' }))
 
@@ -27,12 +27,16 @@ const onConfirmLinkEmailSubmit = (e) => confirmEmail(e.target.code.value)
 
 const confirmEmail = (code) => getApiMeAccountConfirmLinkedEmailsCode(code)
     .then(({ status }) => status == 200 ? Promise.resolve() : Promise.reject())
-    .then(_ => toast.success({ message: 'Correo verificado con éxito! Tus insignias han sido reclamadas.' }))
+    .then(_ => toast.success({ message: 'Correo verificado con éxito. Tus insignias han sido reclamadas.' }))
     .then(_ => fetchMe())
     .catch(_ => toast.error({ message: 'Hubo un problema al verificar tu correo. El código podría haber expirado.' }))
-    .finally(_ => e.target.reset())
+    .finally(_ => { confirmEmailOpen.value = false })
     .finally(_ => router.replace({ query: {} }))
-    .finally(_ => closeModal('confirm-email'))
+
+const initials = computed(() => {
+    const name = me?.value?.account?.fullName || ''
+    return name.split(' ').filter(Boolean).slice(0, 2).map(p => p[0]).join('').toUpperCase()
+})
 
 onMounted(() => {
     if (route.query.verify)
@@ -41,100 +45,127 @@ onMounted(() => {
 </script>
 
 <template>
-    <div class="card bg-base-200 shadow">
-        <div class="card-body">
-            <div class="flex justify-between items-center">
-                <div class="flex items-center gap-2">
-                    <div class="tooltip tooltip-right"
-                        data-tip="Asegúrate de que tu nombre esté escrito correctamente en tu perfil. Así evitaremos errores en la emisión de tus certificados. Recuerda que saldrá exactamente como lo hayas registrado.">
-                        <Icon name="material-symbols:info" class=" text-primary text-2xl" />
-                    </div>
-                    <h2 class="card-title font-bold text-2xl">
-                        {{ me?.account?.fullName }}
-                    </h2>
+    <div>
+        <div class="page-head">
+            <h1 class="page-title">Mi perfil</h1>
+            <p class="page-sub">Gestiona tu identidad y los correos asociados a tus credenciales.</p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Identity card -->
+            <div class="card card-pad flex flex-col items-center text-center gap-4 lg:col-span-1">
+                <div class="relative">
+                    <span class="flex h-24 w-24 items-center justify-center rounded-3xl bg-gradient-to-br from-[#0e7490] to-[#0b1b33] text-3xl font-bold text-white shadow-card-hover">
+                        {{ initials || '?' }}
+                    </span>
+                    <span class="absolute -bottom-1 -right-1 flex h-7 w-7 items-center justify-center rounded-full bg-success text-white border-2 border-surface">
+                        <Icon name="material-symbols:verified" class="text-base" />
+                    </span>
                 </div>
-                <button @click="openModal('edit-name')" class="btn btn-primary">
-                    <Icon name="material-symbols:edit" class="text-2xl" />
+                <div class="flex flex-col gap-1">
+                    <h2 class="font-display text-xl font-bold">{{ me?.account?.fullName }}</h2>
+                    <p class="text-sm text-ink-soft">{{ me?.account?.email }}</p>
+                </div>
+                <button class="btn btn-outline btn-sm" @click="editNameOpen = true">
+                    <Icon name="material-symbols:edit" class="text-lg" />
+                    Editar nombre
                 </button>
             </div>
 
-            <div class="divider m-0"></div>
-
-            <div class="flex flex-col md:flex-row justify-between items-center">
-                <h3 class="font-bold text-lg">Emails:</h3>
-                <div class="flex flex-col md:flex-row gap-2 w-full md:w-auto">
-                    <button @click="openModal('link-new-email')" class="btn btn-primary btn-block md:w-auto">
-                        <Icon name="material-symbols:mail" class="text-2xl" />
-                        Vincular nuevo email
-                    </button>
-
-                    <button @click="openModal('confirm-email')" class="btn btn-secondary btn-block md:w-auto">
-                        <Icon name="material-symbols:mark-email-read" class="text-2xl" />
-                        Confirmar vinculación
-                    </button>
+            <!-- Emails -->
+            <div class="card card-pad lg:col-span-2 flex flex-col gap-5">
+                <div class="flex items-center justify-between gap-4 flex-wrap">
+                    <h2 class="font-display text-lg font-bold">Emails vinculados</h2>
+                    <div class="flex gap-2 flex-wrap">
+                        <button class="btn btn-primary btn-sm" @click="linkEmailOpen = true">
+                            <Icon name="material-symbols:mail" class="text-lg" />
+                            Vincular email
+                        </button>
+                        <button class="btn btn-outline btn-sm" @click="confirmEmailOpen = true">
+                            <Icon name="material-symbols:mark-email-read" class="text-lg" />
+                            Confirmar código
+                        </button>
+                    </div>
                 </div>
+                <div class="divider m-0"></div>
+                <ul class="flex flex-col gap-3">
+                    <li class="flex items-center gap-3 rounded-xl border border-line bg-surface-2 px-4 py-3">
+                        <Icon name="material-symbols:mail" class="text-xl text-teal" />
+                        <span class="flex-1 text-sm font-medium">{{ me?.account?.email }}</span>
+                        <span class="badge badge-gold">Predeterminado</span>
+                    </li>
+                    <li v-for="email in me?.linkedEmails" :key="email" class="flex items-center gap-3 rounded-xl border border-line bg-surface-2 px-4 py-3">
+                        <Icon name="material-symbols:mail" class="text-xl text-teal" />
+                        <span class="flex-1 text-sm font-medium">{{ email }}</span>
+                    </li>
+                    <li v-if="!me?.linkedEmails?.length" class="text-sm text-ink-soft py-2">
+                        No tienes emails adicionales vinculados.
+                    </li>
+                </ul>
             </div>
-            <p>{{ me?.account?.email }} (Predeterminado)</p>
-            <p v-for="email in me?.linkedEmails">
-                {{ email }}
-            </p>
         </div>
     </div>
 
-    <dialog id="edit-name" class="modal">
-        <div class="modal-box">
-            <h3 class="text-lg font-bold">Actualizar nombre</h3>
-            <div class="divider m-0"></div>
-            <form @submit.prevent="onEditNameSubmit">
-                <fieldset class="fieldset">
-                    <legend class="fieldset-legend">Nombre</legend>
-                    <input type="text" class="input w-full" name="name" />
-                </fieldset>
-                <button class="btn btn-primary btn-block mt-5">
-                    Actualizar
-                </button>
-            </form>
+    <!-- Edit name dialog -->
+    <Teleport to="body">
+        <div v-if="editNameOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60" @click.self="editNameOpen = false">
+            <div class="w-full max-w-md rounded-3xl border border-line bg-surface p-6 shadow-card-hover" role="dialog" aria-modal="true">
+                <div class="flex items-center justify-between mb-5">
+                    <h3 class="font-display text-lg font-bold">Actualizar nombre</h3>
+                    <button class="btn btn-ghost btn-icon" aria-label="Cerrar" @click="editNameOpen = false">
+                        <Icon name="material-symbols:close" class="text-xl" />
+                    </button>
+                </div>
+                <form @submit.prevent="onEditNameSubmit" class="flex flex-col gap-5">
+                    <div class="field">
+                        <label class="field-label" for="name">Nombre completo</label>
+                        <input id="name" type="text" name="name" class="input" required />
+                    </div>
+                    <button class="btn btn-primary btn-block">Actualizar</button>
+                </form>
+            </div>
         </div>
-        <form method="dialog" class="modal-backdrop">
-            <button>close</button>
-        </form>
-    </dialog>
+    </Teleport>
 
-    <dialog id="confirm-email" class="modal">
-        <div class="modal-box">
-            <h3 class="text-lg font-bold">Codigo de confirmación</h3>
-            <div class="divider m-0"></div>
-            <form @submit.prevent="onConfirmLinkEmailSubmit">
-                <fieldset class="fieldset">
-                    <legend class="fieldset-legend">Codigo</legend>
-                    <input type="text" class="input w-full" name="code" />
-                </fieldset>
-                <button class="btn btn-primary btn-block mt-5">
-                    Confirmar
-                </button>
-            </form>
+    <!-- Link email dialog -->
+    <Teleport to="body">
+        <div v-if="linkEmailOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60" @click.self="linkEmailOpen = false">
+            <div class="w-full max-w-md rounded-3xl border border-line bg-surface p-6 shadow-card-hover" role="dialog" aria-modal="true">
+                <div class="flex items-center justify-between mb-5">
+                    <h3 class="font-display text-lg font-bold">Vincular nuevo email</h3>
+                    <button class="btn btn-ghost btn-icon" aria-label="Cerrar" @click="linkEmailOpen = false">
+                        <Icon name="material-symbols:close" class="text-xl" />
+                    </button>
+                </div>
+                <form @submit.prevent="onLinkEmailSubmit" class="flex flex-col gap-5">
+                    <div class="field">
+                        <label class="field-label" for="new-email">Email</label>
+                        <input id="new-email" type="email" name="email" class="input" required />
+                    </div>
+                    <button class="btn btn-primary btn-block">Vincular</button>
+                </form>
+            </div>
         </div>
-        <form method="dialog" class="modal-backdrop">
-            <button>close</button>
-        </form>
-    </dialog>
+    </Teleport>
 
-    <dialog id="link-new-email" class="modal">
-        <div class="modal-box">
-            <h3 class="text-lg font-bold">Vincular nuevo email</h3>
-            <div class="divider m-0"></div>
-            <form @submit.prevent="onLinkEmailSubmit">
-                <fieldset class="fieldset">
-                    <legend class="fieldset-legend">Email</legend>
-                    <input type="email" class="input w-full" name="email" />
-                </fieldset>
-                <button class="btn btn-primary btn-block mt-5">
-                    Vincular
-                </button>
-            </form>
+    <!-- Confirm email dialog -->
+    <Teleport to="body">
+        <div v-if="confirmEmailOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60" @click.self="confirmEmailOpen = false">
+            <div class="w-full max-w-md rounded-3xl border border-line bg-surface p-6 shadow-card-hover" role="dialog" aria-modal="true">
+                <div class="flex items-center justify-between mb-5">
+                    <h3 class="font-display text-lg font-bold">Código de confirmación</h3>
+                    <button class="btn btn-ghost btn-icon" aria-label="Cerrar" @click="confirmEmailOpen = false">
+                        <Icon name="material-symbols:close" class="text-xl" />
+                    </button>
+                </div>
+                <form @submit.prevent="onConfirmLinkEmailSubmit" class="flex flex-col gap-5">
+                    <div class="field">
+                        <label class="field-label" for="code">Código</label>
+                        <input id="code" type="text" name="code" class="input font-mono" required />
+                    </div>
+                    <button class="btn btn-primary btn-block">Confirmar</button>
+                </form>
+            </div>
         </div>
-        <form method="dialog" class="modal-backdrop">
-            <button>close</button>
-        </form>
-    </dialog>
+    </Teleport>
 </template>
