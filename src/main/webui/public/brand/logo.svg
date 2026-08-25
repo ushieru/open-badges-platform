@@ -1,0 +1,25 @@
+<svg width="650" height="250" viewBox="-10 0 650 250" fill="none"
+  xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Open Badges Platform">
+  <defs>
+    <linearGradient id="seal" x1="108.253" y1="0" x2="108.253" y2="250" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0B1B33"/>
+      <stop offset="1" stop-color="#0E7490"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Mark (same as logo-mark.svg) -->
+  <g>
+    <path d="M216.506 62.5V187.5L108.253 250L0 187.5V62.5L108.253 0L216.506 62.5ZM21.6504 75V175L108.253 225L194.855 175V75L108.253 25L21.6504 75Z" fill="url(#seal)"/>
+    <path d="M178.253 84.585V165.415L108.253 205.829L38.2529 165.415V84.585L108.253 44.1709L178.253 84.585ZM58.8896 96.5V153.5L108.253 182L157.616 153.5V96.5L108.253 68L58.8896 96.5Z" fill="#0B1B33"/>
+    <path d="M143.253 104.793V145.207L108.253 165.415L73.2529 145.207V104.793L108.253 84.585L143.253 104.793Z" fill="#E8B545"/>
+  </g>
+
+  <!-- Wordmark -->
+  <g transform="translate(240, -30)">
+    <text 
+    x="0" 
+    y="150" 
+    font-family="Space Grotesk, Inter, -apple-system, Segoe UI, sans-serif" font-size="62" font-weight="700" letter-spacing="-1" fill="#0B1B33">Open Badges</text>
+    <text x="5" y="200" font-family="Space Grotesk, Inter, -apple-system, Segoe UI, sans-serif" font-size="36" font-weight="600" letter-spacing="10" fill="#0E7490">PLATFORM</text>
+  </g>
+</svg>

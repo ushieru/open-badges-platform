@@ -1,10 +1,16 @@
-# 🏅 Open Badges Platform
+![Open Badges platform](src/main/webui/public/brand/logo.svg)
+
+---
 
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](LICENSE)
 
 Sovereign, Immutable, and Standard-Compliant Recognition.
 
 Esta plataforma es una implementación del estándar Open Badges 2.0 (1EdTech) diseñada para emitir y validar insignias digitales de forma soberana.
+
+## 🎨 Identidad de Marca
+
+La identidad visual **"Sello Soberano"** (hexágono, paleta navy/teal/dorado) está documentada en **[BRANDING.md](BRANDING.md)** e implementada en el frontend (tema claro/oscuro, tipografía Space Grotesk/Inter/JetBrains Mono, favicon y logos en `src/main/webui/public/brand/`).
 
 ## 🚀 Stack Tecnológico
 
