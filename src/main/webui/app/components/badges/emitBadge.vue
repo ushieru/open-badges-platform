@@ -5,6 +5,7 @@ const { issuerId, badgeId } = defineProps(['issuerId', 'badgeId'])
 
 const toast = useToast()
 const isLoading = ref(false)
+const dialogOpen = ref(false)
 
 const emitBadgesSubmit = (e) => {
     if (isLoading.value) return
@@ -16,50 +17,46 @@ const emitBadgesSubmit = (e) => {
         .then(data => data.status == 200 ? Promise.resolve() : Promise.reject())
         .then(_ => e.target.reset())
         .then(_ => toast.success({ title: 'Insignias emitidas correctamente' }))
-        .then(_ => closeModal('emitBadge'))
+        .then(_ => { dialogOpen.value = false })
         .catch(_ => toast.error({ title: 'Error al emitir las insignias' }))
         .finally(() => isLoading.value = false)
 }
-
-
 </script>
 
 <template>
-    <div class="flex flex-col w-full lg:w-auto lg:absolute top-5 right-5">
-        <button @click="openModal('emitBadge')" class="btn btn-primary">
-            Emitir Insignia
-        </button>
-        <Teleport to="#teleports">
-            <dialog id="emitBadge" class="modal">
-                <div class="modal-box">
-                    <h3 class="text-lg font-bold">Emitir Insignias</h3>
-                    <form @submit.prevent="emitBadgesSubmit">
-                        <fieldset class="fieldset">
-                            <legend class="fieldset-legend">Emails</legend>
-                            <textarea class="textarea w-full" name="emails" rows="3" placeholder=""></textarea>
-                            <p class="label">Ingrese los emails separados por comas.</p>
-                        </fieldset>
-                        <fieldset class=" fieldset">
-                            <legend class="fieldset-legend">Evidencia</legend>
-                            <input type="text" class="input w-full" name="evidence" />
-                        </fieldset>
-                        <div class="mt-5">
-                            <button class="w-full btn btn-primary">
-                                <div v-if="isLoading" class="flex items-center gap-3">
-                                    <div class="grid place-items-center">
-                                        <span class="loading loading-ring loading-xl"></span>
-                                    </div>
-                                    Enviando...
-                                </div>
-                                <p v-else>Emitir Insignias</p>
-                            </button>
-                        </div>
-                    </form>
+    <button class="btn btn-gold" @click="dialogOpen = true">
+        <Icon name="material-symbols:add-task" class="text-lg" />
+        Emitir insignia
+    </button>
+
+    <Teleport to="body">
+        <div v-if="dialogOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60" @click.self="dialogOpen = false">
+            <div class="w-full max-w-lg rounded-3xl border border-line bg-surface p-6 shadow-card-hover" role="dialog" aria-modal="true" aria-labelledby="emit-title">
+                <div class="flex items-center justify-between mb-5">
+                    <h3 id="emit-title" class="font-display text-lg font-bold">Emitir insignias</h3>
+                    <button class="btn btn-ghost btn-icon" aria-label="Cerrar" @click="dialogOpen = false">
+                        <Icon name="material-symbols:close" class="text-xl" />
+                    </button>
                 </div>
-                <form method="dialog" class="modal-backdrop">
-                    <button>close</button>
+                <form @submit.prevent="emitBadgesSubmit" class="flex flex-col gap-5">
+                    <div class="field">
+                        <label class="field-label" for="emails">Emails</label>
+                        <textarea id="emails" name="emails" rows="3" class="textarea" placeholder="usuario1@correo.com, usuario2@correo.com"></textarea>
+                        <p class="text-xs text-ink-soft">Separa los correos con comas.</p>
+                    </div>
+                    <div class="field">
+                        <label class="field-label" for="evidence">Evidencia (URL)</label>
+                        <input id="evidence" type="url" name="evidence" class="input" placeholder="https://..." />
+                    </div>
+                    <button class="btn btn-primary btn-block" :disabled="isLoading">
+                        <span v-if="isLoading" class="spinner"></span>
+                        <template v-else>
+                            Emitir insignias
+                            <Icon name="material-symbols:arrow-forward" class="text-lg" />
+                        </template>
+                    </button>
                 </form>
-            </dialog>
-        </Teleport>
-    </div>
+            </div>
+        </div>
+    </Teleport>
 </template>

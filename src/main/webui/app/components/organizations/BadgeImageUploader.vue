@@ -23,7 +23,7 @@ const onFileChange = (event) => {
         img.src = e.target?.result
         img.onload = () => {
             if (img.width !== img.height || img.width > MAX_DIMENSION) {
-                error.value = "Dimensiones inválidas (Máx 500x500 y cuadrada)."
+                error.value = 'Dimensiones inválidas (máx. 500x500 y cuadrada).'
                 resetInput()
                 return
             }
@@ -42,18 +42,19 @@ const resetInput = () => {
 </script>
 
 <template>
-    <div class="flex flex-col items-center">
+    <div class="flex flex-col items-center gap-3">
         <label
-            class="relative flex flex-col items-center justify-center w-64 h-64 border-2 border-dashed rounded-xl cursor-pointer overflow-hidden border-gray-300">
-            <img v-if="previewUrl" :src="previewUrl" class="absolute inset-0 object-cover w-full h-full" />
-            <div v-else class="flex flex-col items-center justify-center pt-5 pb-6">
-                <span class="material-symbols-outlined text-gray-400 text-5xl mb-2">Imagen</span>
-                <p class="text-xs text-gray-500 dark:text-gray-400 font-medium">SVG/PNG cuadrado</p>
-                <p class="text-[10px] text-gray-400 mt-1">Máx. 500x500px (2MB)</p>
+            class="group relative flex aspect-square w-64 cursor-pointer flex-col items-center justify-center overflow-hidden rounded-[2rem] border-2 border-dashed border-line-strong bg-surface-2 transition-colors hover:border-teal">
+            <img v-if="previewUrl" :src="previewUrl" class="absolute inset-0 h-full w-full object-cover" :alt="'Vista previa de la insignia'" />
+            <div v-else class="flex flex-col items-center justify-center p-6 text-center">
+                <span class="mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-teal-soft text-teal transition-transform group-hover:scale-105">
+                    <Icon name="material-symbols:image" class="text-2xl" />
+                </span>
+                <p class="text-sm font-medium text-ink">SVG/PNG cuadrado</p>
+                <p class="mt-1 text-xs text-ink-soft">Máx. 500×500px (2MB)</p>
             </div>
-            <input ref="fileInput" type="file" class="hidden" accept="image/png, image/svg+xml"
-                @change="onFileChange" />
+            <input ref="fileInput" type="file" class="hidden" accept="image/png, image/svg+xml" @change="onFileChange" />
         </label>
-        <p v-if="error" class="mt-2 text-xs text-red-500 font-bold uppercase">{{ error }}</p>
+        <p v-if="error" class="text-xs font-semibold text-danger">{{ error }}</p>
     </div>
 </template>
