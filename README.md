@@ -1,4 +1,4 @@
-![Open Badges platform](src/main/webui/public/brand/logo.svg)
+<img src="src/main/webui/public/brand/logo.svg" style="background-color: #F0F0F0; padding: 8px; border-radius: 3px;" />
 
 ---
 
