@@ -57,7 +57,7 @@ public class ClaimAssertions {
                 continue;
             }
             assertion.account = account;
-            assertion.isPublic = true;
+            assertion.isPublic = false;
             Hibernate.initialize(assertion.badgeClass);
             Hibernate.initialize(assertion.badgeClass.issuer);
             Hibernate.initialize(assertion.badgeClass.image);

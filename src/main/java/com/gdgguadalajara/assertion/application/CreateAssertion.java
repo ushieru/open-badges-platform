@@ -92,7 +92,7 @@ public class CreateAssertion {
         Hibernate.initialize(assertion.badgeClass.image);
         if (account != null) {
             assertion.account = account;
-            assertion.isPublic = true;
+            assertion.isPublic = false;
             assertion.htmlPayload = Templates.htmlPayload(domain, assertion).render()
                     .replaceAll("(?s)", "")
                     .replaceAll("(?s)\\s+", " ")
