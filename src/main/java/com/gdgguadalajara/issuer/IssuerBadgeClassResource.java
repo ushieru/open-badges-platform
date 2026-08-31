@@ -2,6 +2,7 @@ package com.gdgguadalajara.issuer;
 
 import java.util.UUID;
 
+import com.gdgguadalajara.assertion.model.dto.BadgeIssuanceSummary;
 import com.gdgguadalajara.badgeclass.application.CreateBadgeClass;
 import com.gdgguadalajara.badgeclass.application.RemoveBadgeClass;
 import com.gdgguadalajara.badgeclass.model.BadgeClass;
@@ -9,6 +10,7 @@ import com.gdgguadalajara.badgeclass.model.dto.CreateBadgeClassRequest;
 import com.gdgguadalajara.common.PageBuilder;
 import com.gdgguadalajara.common.model.PaginatedResponse;
 import com.gdgguadalajara.common.model.dto.PaginationRequestParams;
+import com.gdgguadalajara.issuer.application.BuildBadgeIssuanceSummary;
 import com.gdgguadalajara.membership.model.MemberRole;
 import com.gdgguadalajara.security.annotations.OrgRole;
 
@@ -28,10 +30,28 @@ public class IssuerBadgeClassResource {
 
     private final CreateBadgeClass createBadgeClass;
     private final RemoveBadgeClass removeBadgeClass;
+    private final BuildBadgeIssuanceSummary buildBadgeIssuanceSummary;
 
     @GET
     public PaginatedResponse<BadgeClass> read(UUID issuerUuid, @BeanParam @Valid PaginationRequestParams params) {
         return PageBuilder.of(BadgeClass.find("issuer.id", Sort.descending("createdAt"), issuerUuid), params);
+    }
+
+    @GET
+    @Path("/analytics")
+    @Authenticated
+    @OrgRole({ MemberRole.OWNER, MemberRole.ADMIN })
+    public PaginatedResponse<BadgeIssuanceSummary> analytics(UUID issuerUuid,
+            @BeanParam @Valid PaginationRequestParams params) {
+        return buildBadgeIssuanceSummary.run(issuerUuid, params);
+    }
+
+    @GET
+    @Path("/{badgeClassUuid}/analytics")
+    @Authenticated
+    @OrgRole({ MemberRole.OWNER, MemberRole.ADMIN })
+    public BadgeIssuanceSummary analyticsForBadge(UUID issuerUuid, UUID badgeClassUuid) {
+        return buildBadgeIssuanceSummary.runForBadge(issuerUuid, badgeClassUuid);
     }
 
     @POST

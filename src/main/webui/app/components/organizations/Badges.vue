@@ -3,11 +3,20 @@ import { getApiV2IssuersIssuerUuidBadges } from '~/services/issuer-badge-class-r
 
 const toast = useToast()
 const { issuerUuid } = defineProps(['issuerUuid'])
+const { me } = useAuth()
 
 const { params, setParam } = useParams('getApiV2IssuersIssuerUuidBadges' + issuerUuid + 'Params', { page: 1, sort: 'name' })
 const { data: paginatedBadges, status, refresh } = useLazyAsyncData('getApiV2IssuersIssuerUuidBadges' + issuerUuid,
     () => getApiV2IssuersIssuerUuidBadges(issuerUuid, params.value),
     { transform: data => data.data })
+
+const isMember = computed(() =>
+    me.value?.memberships?.some(m => m.issuer.id === issuerUuid))
+
+const badgeUrl = (badge) =>
+    isMember.value
+        ? `/organizations/${issuerUuid}/badge/${badge.id}`
+        : `/badges/${badge.id}`
 
 const prevPage = _ => setParam('page', params.value.page - 1)
 const nextPage = _ => setParam('page', params.value.page + 1)
@@ -42,7 +51,7 @@ watch(params, _ => refresh())
 
         <template v-else>
             <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-                <NuxtLink v-for="badge in paginatedBadges.data" :key="badge.id" :to="`/badges/${badge.id}`"
+                <NuxtLink v-for="badge in paginatedBadges.data" :key="badge.id" :to="badgeUrl(badge)"
                     class="card card-hover p-3 group">
                     <img :src="badge.jsonPayload.image" :alt="badge.name"
                         class="aspect-square w-full rounded-xl object-cover transition-transform duration-500 group-hover:scale-[1.02]" />
