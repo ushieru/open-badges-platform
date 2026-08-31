@@ -6,7 +6,8 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
         'terms',
         'privacy',
         'badges-badgeId',
-        'organizations-id'
+        'organizations-id',
+        'u-accountUuid'
     ]
     
     const isPublicRoute = publicRouteNames.includes(to.name as string)
