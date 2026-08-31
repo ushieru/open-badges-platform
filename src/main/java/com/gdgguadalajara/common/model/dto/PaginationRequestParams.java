@@ -16,4 +16,11 @@ public class PaginationRequestParams {
     @Positive
     @Max(100)
     public Integer size;
+
+    @QueryParam("sort")
+    public String sort;
+
+    public String sortOrDefault(String fallback) {
+        return sort != null && !sort.isBlank() ? sort : fallback;
+    }
 }
