@@ -49,30 +49,34 @@ const patch = async (url: string, body: unknown, options?: RequestInit) => {
   return { data, status: res.status };
 };
 
-export const getPatchApiV2IssuersIssuerUuidAssertionsAssertionUuidRevokeUrl = (
+export const getPatchApiV2IssuersIssuerUuidBadgesBadgeClassUuidAssertionsAssertionUuidRevokeUrl = (
   issuerUuid: Uuid,
+  badgeClassUuid: Uuid,
   assertionUuid: Uuid,
-) => `/api/v2/issuers/${issuerUuid}/assertions/${assertionUuid}/revoke`;
+) => `/api/v2/issuers/${issuerUuid}/badges/${badgeClassUuid}/assertions/${assertionUuid}/revoke`;
 
-export const patchApiV2IssuersIssuerUuidAssertionsAssertionUuidRevoke = async (
+export const patchApiV2IssuersIssuerUuidBadgesBadgeClassUuidAssertionsAssertionUuidRevoke = async (
   issuerUuid: Uuid,
+  badgeClassUuid: Uuid,
   assertionUuid: Uuid,
   body: RevokeAssertionRequest,
   options?: RequestInit,
 ): Promise<{ data: RevokeAssertionResponse; status: number }> =>
-  patch(getPatchApiV2IssuersIssuerUuidAssertionsAssertionUuidRevokeUrl(issuerUuid, assertionUuid), body, options);
+  patch(getPatchApiV2IssuersIssuerUuidBadgesBadgeClassUuidAssertionsAssertionUuidRevokeUrl(issuerUuid, badgeClassUuid, assertionUuid), body, options);
 
-export const getPatchApiV2IssuersIssuerUuidAssertionsAssertionUuidUnrevokeUrl = (
+export const getPatchApiV2IssuersIssuerUuidBadgesBadgeClassUuidAssertionsAssertionUuidUnrevokeUrl = (
   issuerUuid: Uuid,
+  badgeClassUuid: Uuid,
   assertionUuid: Uuid,
-) => `/api/v2/issuers/${issuerUuid}/assertions/${assertionUuid}/unrevoke`;
+) => `/api/v2/issuers/${issuerUuid}/badges/${badgeClassUuid}/assertions/${assertionUuid}/unrevoke`;
 
-export const patchApiV2IssuersIssuerUuidAssertionsAssertionUuidUnrevoke = async (
+export const patchApiV2IssuersIssuerUuidBadgesBadgeClassUuidAssertionsAssertionUuidUnrevoke = async (
   issuerUuid: Uuid,
+  badgeClassUuid: Uuid,
   assertionUuid: Uuid,
   options?: RequestInit,
 ): Promise<{ data: UnrevokeAssertionResponse; status: number }> =>
-  patch(getPatchApiV2IssuersIssuerUuidAssertionsAssertionUuidUnrevokeUrl(issuerUuid, assertionUuid), {}, options);
+  patch(getPatchApiV2IssuersIssuerUuidBadgesBadgeClassUuidAssertionsAssertionUuidUnrevokeUrl(issuerUuid, badgeClassUuid, assertionUuid), {}, options);
 
 export const getPatchApiV2IssuersIssuerUuidBadgesBadgeClassUuidRevokeUrl = (
   issuerUuid: Uuid,

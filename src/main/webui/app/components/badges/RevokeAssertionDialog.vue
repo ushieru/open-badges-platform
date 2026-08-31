@@ -1,11 +1,12 @@
-<script setup>
+<script setup lang="ts">
 import {
-    patchApiV2IssuersIssuerUuidAssertionsAssertionUuidRevoke,
-    patchApiV2IssuersIssuerUuidAssertionsAssertionUuidUnrevoke,
+    patchApiV2IssuersIssuerUuidBadgesBadgeClassUuidAssertionsAssertionUuidRevoke,
+    patchApiV2IssuersIssuerUuidBadgesBadgeClassUuidAssertionsAssertionUuidUnrevoke,
 } from '~/services/issuer-revocation-resource/issuer-revocation-resource'
 
 const props = defineProps({
     issuerUuid: { type: String, required: true },
+    badgeClassUuid: { type: String, required: true },
     assertionUuid: { type: String, required: true },
     isRevoked: { type: Boolean, default: false },
 })
@@ -21,7 +22,8 @@ const openDialog = () => { reason.value = ''; open.value = true }
 const submitRevoke = () => {
     if (!reason.value.trim()) { toast.error({ title: 'El motivo es obligatorio' }); return }
     loading.value = true
-    patchApiV2IssuersIssuerUuidAssertionsAssertionUuidRevoke(props.issuerUuid, props.assertionUuid, { reason: reason.value })
+    patchApiV2IssuersIssuerUuidBadgesBadgeClassUuidAssertionsAssertionUuidRevoke(
+        props.issuerUuid, props.badgeClassUuid, props.assertionUuid, { reason: reason.value })
         .then(({ status }) => status == 200 ? Promise.resolve() : Promise.reject())
         .then(_ => toast.success({ title: 'Credencial revocada' }))
         .then(_ => { open.value = false; emit('updated') })
@@ -31,7 +33,8 @@ const submitRevoke = () => {
 
 const submitUnrevoke = () => {
     loading.value = true
-    patchApiV2IssuersIssuerUuidAssertionsAssertionUuidUnrevoke(props.issuerUuid, props.assertionUuid)
+    patchApiV2IssuersIssuerUuidBadgesBadgeClassUuidAssertionsAssertionUuidUnrevoke(
+        props.issuerUuid, props.badgeClassUuid, props.assertionUuid)
         .then(({ status }) => status == 200 ? Promise.resolve() : Promise.reject())
         .then(_ => toast.success({ title: 'Credencial restaurada' }))
         .then(_ => emit('updated'))

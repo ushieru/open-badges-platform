@@ -121,7 +121,7 @@ watch(params, () => refresh())
                                     <a :href="`/api/v2/assertions/${item.assertionId}`" target="_blank" rel="noopener" class="btn btn-outline btn-sm" aria-label="Ver assertion pública">
                                         <Icon name="material-symbols:open-in-new" class="text-lg" />
                                     </a>
-                                    <BadgesRevokeAssertionDialog :issuer-uuid="issuerUuid" :assertion-uuid="item.assertionId"
+                                    <BadgesRevokeAssertionDialog :issuer-uuid="issuerUuid" :badge-class-uuid="badgeClassUuid" :assertion-uuid="item.assertionId"
                                         :is-revoked="item.status === 'REVOKED'" @updated="refresh" />
                                 </div>
                             </td>

@@ -72,9 +72,13 @@ Assertion
 ### 5.1 Revocar una assertion
 
 ```
-PATCH /api/v2/issuers/{issuerUuid}/assertions/{assertionUuid}/revoke
+PATCH /api/v2/issuers/{issuerUuid}/badges/{badgeClassUuid}/assertions/{assertionUuid}/revoke
 Content-Type: application/json
 ```
+
+> El endpoint vive en `IssuerAssertionResource`, por lo que la ruta conserva el contexto
+> de badge (`{badgeClassUuid}`) además del `issuerUuid`. `OrgSecurityFilter` valida la
+> membresía sobre `issuerUuid` y el caso de uso valida la pertenencia de la assertion.
 
 **Auth:** `@Authenticated` + `@OrgRole({ OWNER, ADMIN })`
 
@@ -108,7 +112,7 @@ Content-Type: application/json
 ### 5.2 Des-revocar una assertion
 
 ```
-PATCH /api/v2/issuers/{issuerUuid}/assertions/{assertionUuid}/unrevoke
+PATCH /api/v2/issuers/{issuerUuid}/badges/{badgeClassUuid}/assertions/{assertionUuid}/unrevoke
 ```
 
 **Auth:** `@Authenticated` + `@OrgRole({ OWNER, ADMIN })`
@@ -267,12 +271,21 @@ Siguiendo la arquitectura de `AGENTS.md` (Resource → application → model):
 
 ```
 src/main/java/com/gdgguadalajara/assertion/
-├── IssuerAssertionResource.java   # (ya existe) se agregan PATCH revoke/unrevoke + revoke masivo
-└── application/
-    ├── RevokeAssertion.java       # run(issuerUuid, assertionUuid, request)
-    ├── UnrevokeAssertion.java     # run(issuerUuid, assertionUuid)
-    └── RevokeBadgeAssertions.java # run(issuerUuid, badgeClassUuid, request) — masivo
+├── application/
+│   ├── AssertionMetadata.java      # regenera jsonPayload + htmlPayload (helper compartido)
+│   ├── RevokeAssertion.java        # run(issuerUuid, assertionUuid, request)
+│   ├── UnrevokeAssertion.java      # run(issuerUuid, assertionUuid)
+│   └── RevokeBadgeAssertions.java  # run(issuerUuid, badgeClassUuid, request) — masivo
+src/main/java/com/gdgguadalajara/issuer/
+├── IssuerAssertionResource.java    # (modificado) PATCH revoke/unrevoke
+└── IssuerBadgeClassResource.java   # (modificado) PATCH /{badgeClassUuid}/revoke
 ```
+
+### Regeneración de metadatos
+
+Se extrae la regeneración de `jsonPayload`/`htmlPayload` a un caso de uso compartido
+**`AssertionMetadata.regenerate(Assertion)`** (inyecta `ObjectMapper` y el `domain`), usado por
+`RevokeAssertion`, `UnrevokeAssertion` y `RevokeBadgeAssertions` sin duplicar lógica.
 
 ### Casos de uso
 
@@ -331,8 +344,8 @@ if (assertion.badgeClass.issuer.id != issuerUuid)  // o !equals
 @Path("/{assertionUuid}/revoke")
 @Authenticated
 @OrgRole({ MemberRole.OWNER, MemberRole.ADMIN })
-public RevokeAssertionResponse revoke(UUID issuerUuid, UUID assertionUuid,
-        RevokeAssertionRequest request) {
+public RevokeAssertionResponse revoke(UUID issuerUuid, UUID badgeClassUuid, UUID assertionUuid,
+        @Valid RevokeAssertionRequest request) {
     return revokeAssertion.run(issuerUuid, assertionUuid, request);
 }
 
@@ -340,7 +353,7 @@ public RevokeAssertionResponse revoke(UUID issuerUuid, UUID assertionUuid,
 @Path("/{assertionUuid}/unrevoke")
 @Authenticated
 @OrgRole({ MemberRole.OWNER, MemberRole.ADMIN })
-public UnrevokeAssertionResponse unrevoke(UUID issuerUuid, UUID assertionUuid) {
+public UnrevokeAssertionResponse unrevoke(UUID issuerUuid, UUID badgeClassUuid, UUID assertionUuid) {
     return unrevokeAssertion.run(issuerUuid, assertionUuid);
 }
 ```
