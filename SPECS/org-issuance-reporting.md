@@ -117,6 +117,41 @@ Devuelve, para cada badge de la organización, métricas agregadas de emisión.
 
 **Query params:** hereda `PaginationRequestParams` (`page`, `size`).
 
+### 5.1.1 Resumen de un solo badge
+
+```
+GET /api/v2/issuers/{issuerUuid}/badges/{badgeClassUuid}/analytics
+```
+
+Devuelve las métricas agregadas de **una sola credencial**, minimizando la carga cuando la
+vista ya tiene el contexto de org + badge.
+
+**Auth:** `@Authenticated` + `@OrgRole({ OWNER, ADMIN })`
+
+**Response `200 OK`**
+
+```json
+{
+  "badgeId": "f1f21e11-c76d-4cda-a2b3-103b2ca39903",
+  "name": "Core Contributor",
+  "imageUrl": "https://.../image.png",
+  "issued": 42,
+  "claimed": 31,
+  "pending": 9,
+  "revoked": 2,
+  "claimRate": 73.81
+}
+```
+
+**Errores:**
+
+| Código | Caso                                       |
+| ------ | ------------------------------------------ |
+| `404`  | BadgeClass no encontrado o de otra organización |
+
+> La UI de la ruta `/organizations/{orgUuid}/badge/{uuid}` usa este endpoint (no el listado
+> completo), reduciendo la consulta a una sola credencial.
+
 ### 5.2 Detalle de recipientes por badge
 
 ```
@@ -294,6 +329,11 @@ src/main/java/com/gdgguadalajara/issuer/
   `claimRate` = `claimed / issued * 100` redondeado a 2 decimales (`claimRate = 0` si no hay emisiones).
 - `imageUrl` = `/api/storage/images/{badge.image.id}` si el badge tiene imagen.
 
+**`BuildBadgeIssuanceSummary.runForBadge(UUID issuerUuid, UUID badgeClassUuid)`**
+- `@Transactional`
+- Valida que el `BadgeClass` exista y pertenezca al `issuerUuid` (`DomainException.notFound`).
+- Reutiliza `buildSummary(badge)` para devolver el resumen de una sola credencial.
+
 **`ListBadgeAssertions.run(UUID issuerUuid, UUID badgeClassUuid, AssertionFilterParams filters, PaginationRequestParams params)`**
 - `@Transactional`
 - Valida que el `BadgeClass` exista y pertenezca al `issuerUuid` (`DomainException.notFound`).
@@ -337,6 +377,14 @@ public PaginatedResponse<BadgeIssuanceSummary> analytics(UUID issuerUuid,
         @BeanParam @Valid PaginationRequestParams params) {
     return buildBadgeIssuanceSummary.run(issuerUuid, params);
 }
+
+@GET
+@Path("/{badgeClassUuid}/analytics")
+@Authenticated
+@OrgRole({ MemberRole.OWNER, MemberRole.ADMIN })
+public BadgeIssuanceSummary analyticsForBadge(UUID issuerUuid, UUID badgeClassUuid) {
+    return buildBadgeIssuanceSummary.runForBadge(issuerUuid, badgeClassUuid);
+}
 ```
 
 - **`IssuerAssertionResource`** (`/api/v2/issuers/{issuerUuid}/badges/{badgeClassUuid}/assertions`)
@@ -374,8 +422,8 @@ public PaginatedResponse<BadgeAssertionItem> read(UUID issuerUuid, UUID badgeCla
 
 - Ruta: `GET /organizations/{id}/badge/{badgeId}`
 - Contexto: la ruta incluye tanto la organización (`{id}`) como la credencial (`{badgeId}`),
-  por lo que la vista tiene la referencia de org + badge y consume el **URL de analíticas**
-  (`/api/v2/issuers/{issuerUuid}/badges/analytics`) para ese badge concreto, además del
+  por lo que la vista tiene la referencia de org + badge y consume el **URL de analíticas
+  por badge** (`/api/v2/issuers/{issuerUuid}/badges/{badgeClassUuid}/analytics`), además del
   listado de recipientes.
 - Contenido:
   - **Cabecera:** imagen + nombre de la credencial y enlace a la organización.

@@ -88,6 +88,25 @@ export const getApiV2IssuersIssuerUuidBadgesAnalytics = async (
   return { data, status: res.status };
 };
 
+export const getGetApiV2IssuersIssuerUuidBadgesBadgeClassUuidAnalyticsUrl = (
+  issuerUuid: Uuid,
+  badgeClassUuid: Uuid,
+) => `/api/v2/issuers/${issuerUuid}/badges/${badgeClassUuid}/analytics`;
+
+export const getApiV2IssuersIssuerUuidBadgesBadgeClassUuidAnalytics = async (
+  issuerUuid: Uuid,
+  badgeClassUuid: Uuid,
+  options?: RequestInit,
+): Promise<{ data: BadgeIssuanceSummary; status: number }> => {
+  const res = await fetch(getGetApiV2IssuersIssuerUuidBadgesBadgeClassUuidAnalyticsUrl(issuerUuid, badgeClassUuid), {
+    ...options,
+    method: 'GET',
+  });
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+  const data = body ? JSON.parse(body) : {};
+  return { data, status: res.status };
+};
+
 export const getGetApiV2IssuersIssuerUuidBadgesBadgeClassUuidAssertionsUrl = (
   issuerUuid: Uuid,
   badgeClassUuid: Uuid,

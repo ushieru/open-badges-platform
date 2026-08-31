@@ -46,6 +46,14 @@ public class IssuerBadgeClassResource {
         return buildBadgeIssuanceSummary.run(issuerUuid, params);
     }
 
+    @GET
+    @Path("/{badgeClassUuid}/analytics")
+    @Authenticated
+    @OrgRole({ MemberRole.OWNER, MemberRole.ADMIN })
+    public BadgeIssuanceSummary analyticsForBadge(UUID issuerUuid, UUID badgeClassUuid) {
+        return buildBadgeIssuanceSummary.runForBadge(issuerUuid, badgeClassUuid);
+    }
+
     @POST
     @Authenticated
     @OrgRole({ MemberRole.OWNER, MemberRole.ADMIN })
