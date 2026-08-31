@@ -13,7 +13,6 @@ import com.gdgguadalajara.issuer.model.Issuer;
 import com.gdgguadalajara.issuer.model.dto.RevocationListJsonLd;
 
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.transaction.Transactional;
 
 @ApplicationScoped
 public class BuildRevocationList {
@@ -21,7 +20,6 @@ public class BuildRevocationList {
     @ConfigProperty(name = "com.gdgguadalajara.open-badges-platform.domain")
     public String domain;
 
-    @Transactional
     public RevocationListJsonLd run(UUID issuerUuid) {
         Issuer issuer = Issuer.<Issuer>findById(issuerUuid);
         if (issuer == null)
