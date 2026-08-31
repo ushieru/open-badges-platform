@@ -1,9 +1,32 @@
 <script setup>
 import { getApiAdminMeAssertions } from '~/services/admin-resource/admin-resource';
+import { putApiMeAssertionsUuidVisibility } from '~/services/my-assertion-resource/my-assertion-resource';
 
+const { me } = useAuth()
+const toast = useToast()
 const { params, setParam } = useParams('getApiAdminMeAssertions' + 'Params', { page: 1, sort: 'name' })
 const { data: paginatedAssertions, status, refresh } = useLazyAsyncData(() => getApiAdminMeAssertions(params.value),
     { transform: (data) => data.data })
+
+const profileUrl = computed(() => `${window.location.origin}/u/${me.value?.account?.id}`)
+
+const copyProfileUrl = () => copy(profileUrl.value, 'Enlace de perfil copiado')
+
+const togglingId = ref(null)
+
+const toggleVisibility = (assertion) => {
+    if (assertion.isRevoked)
+        return toast.error({ message: 'No puedes cambiar la visibilidad de una credencial revocada' })
+    togglingId.value = assertion.id
+    putApiMeAssertionsUuidVisibility(assertion.id, { isPublic: !assertion.isPublic })
+        .then(({ status }) => status == 200 ? Promise.resolve() : Promise.reject())
+        .then(_ => {
+            assertion.isPublic = !assertion.isPublic
+            toast.success({ message: `"${assertion.badgeClass.name}" ${assertion.isPublic ? 'ahora es pública' : 'ahora es privada'}` })
+        })
+        .catch(_ => toast.error({ message: 'Error al cambiar la visibilidad' }))
+        .finally(_ => { togglingId.value = null })
+}
 
 const open = (assertion) => {
     const features = { toolbar: false, location: false, menubar: false, width: 800, height: 600, scrollbars: true }
@@ -51,13 +74,19 @@ watch(params, _ => refresh())
                 <h1 class="page-title">Mis credenciales</h1>
                 <p class="page-sub">Tus insignias digitales emitidas y verificables.</p>
             </div>
-            <span v-if="paginatedAssertions?.meta" class="badge badge-teal tabular">
-                {{ paginatedAssertions.meta.totalRecords ?? 0 }} credenciales
-            </span>
+            <div class="flex items-center gap-2 flex-wrap">
+                <span v-if="paginatedAssertions?.meta" class="badge badge-teal tabular">
+                    {{ paginatedAssertions.meta.totalRecords ?? 0 }} credenciales
+                </span>
+                <button v-if="me" class="btn btn-outline btn-sm" @click="copyProfileUrl">
+                    <Icon name="material-symbols:share" class="text-lg" />
+                    Compartir mi perfil
+                </button>
+            </div>
         </div>
 
         <!-- Loading skeletons -->
-        <div v-if="status !== 'success'" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5">
+        <div v-if="status !== 'success' && !paginatedAssertions" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5">
             <div v-for="i in 10" :key="i" class="card p-4">
                 <div class="skeleton aspect-square rounded-2xl"></div>
                 <div class="skeleton h-4 w-3/4 mt-4"></div>
@@ -105,12 +134,22 @@ watch(params, _ => refresh())
                             <Icon name="material-symbols:verified" class="text-sm" />
                             Verificada
                         </span>
+                        <span :class="assertion.isPublic ? 'badge badge-teal' : 'badge badge-neutral'">
+                            <Icon :name="assertion.isPublic ? 'material-symbols:public' : 'material-symbols:lock'" class="text-sm" />
+                            {{ assertion.isPublic ? 'Pública' : 'Privada' }}
+                        </span>
                     </div>
                     <p v-if="assertion.isRevoked && assertion.revocationReason" class="text-xs text-danger mt-1 line-clamp-2">
                         {{ assertion.revocationReason }}
                     </p>
                 </div>
                 <div class="mt-4 flex gap-2">
+                    <button @click="toggleVisibility(assertion)" class="btn btn-outline btn-sm flex-1"
+                        :disabled="togglingId == assertion.id || assertion.isRevoked"
+                        :aria-label="assertion.isPublic ? 'Hacer privada' : 'Hacer pública'">
+                        <Icon v-if="togglingId == assertion.id" name="material-symbols:progress-activity" class="text-lg animate-spin" />
+                        <Icon v-else :name="assertion.isPublic ? 'material-symbols:visibility-off' : 'material-symbols:visibility'" class="text-lg" />
+                    </button>
                     <button v-if="!assertion.isRevoked" @click="openShare(assertion)" class="btn btn-outline btn-sm flex-1" aria-label="Compartir">
                         <Icon name="material-symbols:share" class="text-lg" />
                     </button>
