@@ -271,27 +271,32 @@ Siguiendo las reglas de arquitectura de `AGENTS.md` (capas `Resource → applica
 
 ### Módulos nuevos
 
+Los casos de uso se agregan al módulo `issuer` (carpeta `application`) y los endpoints se
+integran en los resources existentes (`IssuerBadgeClassResource`, `IssuerAssertionResource`):
+
 ```
-src/main/java/com/gdgguadalajara/issuer/analytics/
-├── IssuerAnalyticsResource.java        # REST: /api/v2/issuers/{issuerUuid}/badges/analytics
+src/main/java/com/gdgguadalajara/issuer/
+├── IssuerBadgeClassResource.java    # (modificado) GET /badges/analytics
+├── IssuerAssertionResource.java     # (modificado) GET /badges/{badgeClassUuid}/assertions
 └── application/
-    ├── BuildBadgeIssuanceSummary.java  # run(issuerUuid) → List<BadgeIssuanceSummary>
-    └── ListBadgeAssertions.java        # run(badgeClassUuid, page, size) → PaginatedResponse<BadgeAssertionItem>
+    ├── BuildBadgeIssuanceSummary.java  # run(issuerUuid, params) → PaginatedResponse<BadgeIssuanceSummary>
+    └── ListBadgeAssertions.java        # run(issuerUuid, badgeClassUuid, filters, params) → PaginatedResponse<BadgeAssertionItem>
 ```
 
 ### Casos de uso (application)
 
-**`BuildBadgeIssuanceSummary.run(UUID issuerUuid)`**
+**`BuildBadgeIssuanceSummary.run(UUID issuerUuid, PaginationRequestParams params)`**
 - `@Transactional`
-- Consulta agregada con `Assertion` por `badgeClass.issuer.id = ?1` agrupando por `badgeClass`.
-- Para cada badge computa: `issued` (total), `claimed` (account != null), `revoked`
-  (isRevoked), `pending` (issued - claimed), `claimRate` = `claimed / issued * 100`
-  redondeado a 2 decimales.
-- Si `issued == 0` por badge, se omiten (o se incluyen con `claimRate = 0`; se decide incluir
-  solo badges con al menos una emisión para no ensuciar el resumen).
+- Valida que el `Issuer` exista (`DomainException.notFound`).
+- Pagina los `BadgeClass` del issuer (`BadgeClass.find("issuer.id", issuerUuid)`).
+- Por cada badge computa: `issued` (total de assertions), `claimed` (`account is not null`),
+  `revoked` (`isRevoked = true`), `pending` (`issued - claimed`),
+  `claimRate` = `claimed / issued * 100` redondeado a 2 decimales (`claimRate = 0` si no hay emisiones).
+- `imageUrl` = `/api/storage/images/{badge.image.id}` si el badge tiene imagen.
 
-**`ListBadgeAssertions.run(UUID badgeClassUuid, AssertionFilterParams filters, PaginationRequestParams params)`**
+**`ListBadgeAssertions.run(UUID issuerUuid, UUID badgeClassUuid, AssertionFilterParams filters, PaginationRequestParams params)`**
 - `@Transactional`
+- Valida que el `BadgeClass` exista y pertenezca al `issuerUuid` (`DomainException.notFound`).
 - Construye la consulta con `PanacheCriteria.of(Assertion.class)` encadenando
   `.eq("badgeClass.id", badgeClassUuid)`, filtros por `status` (con `isNull`/`isNotNull`/`eq`),
   rango de fechas (`ge`/`le`) y búsqueda (`like` sobre `recipientEmail`).
@@ -300,74 +305,89 @@ src/main/java/com/gdgguadalajara/issuer/analytics/
 
 ### DTO de filtros avanzados
 
+`AssertionFilterParams` se implementa como **clase** con campos `@QueryParam` (siguiendo el
+patrón de `PaginationRequestParams`), porque los `record` no enlazan directamente query params:
+
 ```java
 // model/dto/AssertionFilterParams.java
-public record AssertionFilterParams(
-        @QueryParam("status") AssertionStatus status,
-        @QueryParam("search") String search,
-        @QueryParam("from") LocalDate from,
-        @QueryParam("to") LocalDate to) {
+public class AssertionFilterParams {
+    @QueryParam("status") public AssertionStatus status;
+    @QueryParam("search") public String search;
+    @QueryParam("from") public LocalDate from;
+    @QueryParam("to") public LocalDate to;
 }
 ```
 
-### Resource (REST)
+Además, `PaginationRequestParams` ahora incluye `@QueryParam("sort") String sort` con el
+helper `sortOrDefault(String fallback)`.
+
+### Resource (REST) — integrado en los resources existentes
+
+Los endpoints se integran en los resources existentes del módulo `issuer` para evitar
+conflictos de ruta:
+
+- **`IssuerBadgeClassResource`** (`/api/v2/issuers/{issuerUuid}/badges`) agrega:
 
 ```java
-@Path("/api/v2/issuers/{issuerUuid}/badges")
-public class IssuerAnalyticsResource {
-
-    private final BuildBadgeIssuanceSummary buildBadgeIssuanceSummary;
-    private final ListBadgeAssertions listBadgeAssertions;
-
-    @GET
-    @Path("/analytics")
-    @Authenticated
-    @OrgRole({ MemberRole.OWNER, MemberRole.ADMIN })
-    public PaginatedResponse<BadgeIssuanceSummary> summary(UUID issuerUuid,
-            @BeanParam @Valid PaginationRequestParams params) { ... }
-
-    @GET
-    @Path("/{badgeClassUuid}/assertions")
-    @Authenticated
-    @OrgRole({ MemberRole.OWNER, MemberRole.ADMIN })
-    public PaginatedResponse<BadgeAssertionItem> assertions(UUID issuerUuid, UUID badgeClassUuid,
-            @BeanParam @Valid AssertionFilterParams filters,
-            @BeanParam @Valid PaginationRequestParams params) {
-        return listBadgeAssertions.run(badgeClassUuid, filters, params);
-    }
+@GET
+@Path("/analytics")
+@Authenticated
+@OrgRole({ MemberRole.OWNER, MemberRole.ADMIN })
+public PaginatedResponse<BadgeIssuanceSummary> analytics(UUID issuerUuid,
+        @BeanParam @Valid PaginationRequestParams params) {
+    return buildBadgeIssuanceSummary.run(issuerUuid, params);
 }
 ```
 
-> ⚠️ **Conflicto de ruta:** el resource `IssuerBadgeClassResource` ya expone
-> `GET /api/v2/issuers/{issuerUuid}/badges`. Las nuevas rutas deben convivir sin colisión:
-> `analytics` y `/{badgeClassUuid}/assertions` no chocan con el `GET` base. Se recomienda
-> ubicar el nuevo resource en un subpath nuevo (`.../badges/analytics` y
-> `.../badges/{id}/assertions`) y validar el registro en el arranque.
+- **`IssuerAssertionResource`** (`/api/v2/issuers/{issuerUuid}/badges/{badgeClassUuid}/assertions`)
+  agrega:
+
+```java
+@GET
+@Authenticated
+@OrgRole({ MemberRole.OWNER, MemberRole.ADMIN })
+public PaginatedResponse<BadgeAssertionItem> read(UUID issuerUuid, UUID badgeClassUuid,
+        @BeanParam @Valid AssertionFilterParams filters,
+        @BeanParam @Valid PaginationRequestParams params) {
+    return listBadgeAssertions.run(issuerUuid, badgeClassUuid, filters, params);
+}
+```
+
+> ⚠️ **Conflicto de ruta:** `IssuerBadgeClassResource` ya expone `GET /api/v2/issuers/{issuerUuid}/badges`.
+> `analytics` es un literal y no colisiona con el `GET` base ni con `DELETE /{uuid}`. El listado
+> de assertions vive en `IssuerAssertionResource`, que ya gestiona ese subpath.
 
 ---
 
 ## 7. UI / Frontend (Nuxt)
 
-### 7.1 Pantalla: resumen de emisiones de la organización
+### 7.1 Pantalla: lista de credenciales de la organización
 
-- Ruta: `GET /organizations/{id}` → nueva sección **"Emisiones"** visible solo para
-  `OWNER`/`ADMIN` (reutilizando los wrappers `OnlySuperUsersOrMembers`/`OnlyMembers`).
-- Tabla de badges emitidos con columnas: **Credencial**, **Emitidas**, **Reclamadas**,
-  **Pendientes**, **Revocadas**, **% Reclamación** (barra de progreso).
-- Al hacer clic en una fila → navega al detalle de esa credencial.
+- En `GET /organizations/{id}`, las tarjetas de credenciales (componente
+  `OrganizationsBadges`) enlazan a la vista de emisiones con contexto
+  (`/organizations/{id}/badge/{badgeId}`) **solo para miembros** de la organización.
+  Para visitantes no miembros, enlazan al detalle público (`/badges/{badgeId}`).
+- El resumen global de emisiones **no** vive en la página de la organización: cada badge
+  tiene su propia vista de analíticas con contexto org + badge.
 
-### 7.2 Pantalla: detalle de recipientes por credencial
+### 7.2 Pantalla: detalle de emisiones por credencial
 
-- Ruta: `GET /organizations/{id}/badges/{badgeId}/emissions`
-- Lista de recipientes con:
-  - **Nombre** (si reclamada, `account.fullName`),
-  - **Email** (si reclamada),
-  - **Estado** como badge visual:
+- Ruta: `GET /organizations/{id}/badge/{badgeId}`
+- Contexto: la ruta incluye tanto la organización (`{id}`) como la credencial (`{badgeId}`),
+  por lo que la vista tiene la referencia de org + badge y consume el **URL de analíticas**
+  (`/api/v2/issuers/{issuerUuid}/badges/analytics`) para ese badge concreto, además del
+  listado de recipientes.
+- Contenido:
+  - **Cabecera:** imagen + nombre de la credencial y enlace a la organización.
+  - **Métricas:** tarjetas con `Emitidas`, `Reclamadas`, `Pendientes`, `Revocadas` y
+    `Tasa de reclamación` (barra de progreso), tomadas del endpoint de analíticas.
+  - **Recipientes:** lista con **Nombre** (si reclamada, `account.fullName`), **Email**
+    (si reclamada), **Estado** como badge visual:
     - `CLAIMED` → badge teal con palomita,
     - `PENDING` → badge dorado "Pendiente",
     - `REVOKED` → badge rojo "Revocada",
-  - **Fecha de emisión** (`issuedOn`).
-- Acción por fila: enlace a la assertion pública (`/api/v2/assertions/{id}`).
+    - **Fecha de emisión** (`issuedOn`), y filtros por estado/búsqueda/fechas.
+  - Acción por fila: enlace a la assertion pública (`/api/v2/assertions/{id}`).
 
 ### 7.3 Servicios Orval
 

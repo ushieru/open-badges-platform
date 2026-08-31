@@ -1,5 +1,6 @@
-<script setup>
-import { getApiV2IssuersIssuerUuidBadgesBadgeClassUuidAssertions, type AssertionStatus } from '~/services/issuer-analytics-resource/issuer-analytics-resource'
+<script setup lang="ts">
+import { getApiV2IssuersIssuerUuidBadgesBadgeClassUuidAssertions } from '~/services/issuer-analytics-resource/issuer-analytics-resource'
+import type { AssertionStatus } from '~/services/issuer-analytics-resource/issuer-analytics-resource'
 
 const props = defineProps({
     issuerUuid: { type: String, required: true },

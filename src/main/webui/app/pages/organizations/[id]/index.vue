@@ -118,13 +118,6 @@ const copyJson = () => copy(JSON.stringify(jsonDl.value), 'JSON-LD copiado')
                     <OrganizationsMembers :issuer-uuid="organizationId" />
                 </OnlySuperUsersOrMembers>
             </div>
-
-            <!-- Issuance analytics (OWNER / ADMIN) -->
-            <div class="mt-6">
-                <OnlyMembers :issuer-uuid="organizationId" :roles="[MemberRole.OWNER, MemberRole.ADMIN]">
-                    <OrganizationsIssuanceSummary :issuer-uuid="organizationId" />
-                </OnlyMembers>
-            </div>
         </template>
     </div>
 </template>
