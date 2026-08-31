@@ -1,6 +1,6 @@
 <script setup>
 import { getApiAdminBadgesUuid } from '~/services/admin-resource/admin-resource'
-import { getApiV2IssuersIssuerUuidBadgesAnalytics } from '~/services/issuer-analytics-resource/issuer-analytics-resource'
+import { getApiV2IssuersIssuerUuidBadgesBadgeClassUuidAnalytics } from '~/services/issuer-analytics-resource/issuer-analytics-resource'
 
 const route = useRoute()
 const organizationId = route.params.id
@@ -10,8 +10,8 @@ const { data: payload, status } = useLazyAsyncData(() => getApiAdminBadgesUuid(b
 
 const { data: summary } = useLazyAsyncData(
     'badgeAnalytics-' + badgeId,
-    () => getApiV2IssuersIssuerUuidBadgesAnalytics(organizationId, { page: 1, size: 100 }),
-    { transform: (data) => data.data?.data?.find(item => item.badgeId === badgeId) },
+    () => getApiV2IssuersIssuerUuidBadgesBadgeClassUuidAnalytics(organizationId, badgeId),
+    { transform: (data) => data.data },
 )
 </script>
 

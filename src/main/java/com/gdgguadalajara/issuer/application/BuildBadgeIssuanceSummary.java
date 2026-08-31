@@ -9,6 +9,7 @@ import com.gdgguadalajara.assertion.model.dto.BadgeIssuanceSummary;
 import com.gdgguadalajara.badgeclass.model.BadgeClass;
 import com.gdgguadalajara.common.model.DomainException;
 import com.gdgguadalajara.common.model.PaginatedResponse;
+import com.gdgguadalajara.common.model.PaginationMeta;
 import com.gdgguadalajara.common.model.dto.PaginationRequestParams;
 import com.gdgguadalajara.issuer.model.Issuer;
 
@@ -34,20 +35,30 @@ public class BuildBadgeIssuanceSummary {
         Integer prevPage = (params.page > 1) ? params.page - 1 : null;
 
         List<BadgeIssuanceSummary> summaries = new ArrayList<>();
-        for (BadgeClass badge : badges) {
-            long issued = Assertion.count("badgeClass.id = ?1", badge.id);
-            long claimed = Assertion.count("badgeClass.id = ?1 and account is not null", badge.id);
-            long revoked = Assertion.count("badgeClass.id = ?1 and isRevoked = true", badge.id);
-            long pending = issued - claimed;
-            double claimRate = issued == 0 ? 0.0 : Math.round((claimed * 10000.0) / issued) / 100.0;
-            String imageUrl = badge.image != null ? "/api/storage/images/" + badge.image.id : null;
+        for (BadgeClass badge : badges)
+            summaries.add(buildSummary(badge));
 
-            summaries.add(new BadgeIssuanceSummary(
-                    badge.id, badge.name, imageUrl, issued, claimed, pending, revoked, claimRate));
-        }
-
-        var meta = new com.gdgguadalajara.common.model.PaginationMeta(
-                totalRecords, params.page, totalPages, nextPage, prevPage);
+        var meta = new PaginationMeta(totalRecords, params.page, totalPages, nextPage, prevPage);
         return new PaginatedResponse<>(summaries, meta);
+    }
+
+    @Transactional
+    public BadgeIssuanceSummary runForBadge(UUID issuerUuid, UUID badgeClassUuid) {
+        BadgeClass badge = BadgeClass.<BadgeClass>findById(badgeClassUuid);
+        if (badge == null || !badge.issuer.id.equals(issuerUuid))
+            throw DomainException.notFound("Credencial no encontrada");
+        return buildSummary(badge);
+    }
+
+    private BadgeIssuanceSummary buildSummary(BadgeClass badge) {
+        long issued = Assertion.count("badgeClass.id = ?1", badge.id);
+        long claimed = Assertion.count("badgeClass.id = ?1 and account is not null", badge.id);
+        long revoked = Assertion.count("badgeClass.id = ?1 and isRevoked = true", badge.id);
+        long pending = issued - claimed;
+        double claimRate = issued == 0 ? 0.0 : Math.round((claimed * 10000.0) / issued) / 100.0;
+        String imageUrl = badge.image != null ? "/api/storage/images/" + badge.image.id : null;
+
+        return new BadgeIssuanceSummary(
+                badge.id, badge.name, imageUrl, issued, claimed, pending, revoked, claimRate);
     }
 }
