@@ -1,6 +1,5 @@
 package com.gdgguadalajara.issuer;
 
-import java.util.List;
 import java.util.UUID;
 
 import com.gdgguadalajara.common.PageBuilder;
